@@ -90,7 +90,7 @@ const OrderConfirmation = () => {
             {location.state?.orderPlaced && (
                 <div className="mb-8 bg-success/10 border-2 border-success rounded-lg p-6">
                     <div className="flex items-start">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                             <svg className="h-8 w-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -158,7 +158,7 @@ const OrderConfirmation = () => {
                 <div className="space-y-4">
                     {order.items?.map((item) => (
                         <div key={item.id} className="flex gap-4 pb-4 border-b border-border last:border-0">
-                            <div className="w-20 h-20 bg-surface rounded overflow-hidden flex-shrink-0">
+                            <div className="w-20 h-20 bg-surface rounded overflow-hidden shrink-0">
                                 {item.product?.image_url && (
                                     <img
                                         src={item.product.image_url}
@@ -167,7 +167,7 @@ const OrderConfirmation = () => {
                                     />
                                 )}
                             </div>
-                            <div className="flex-grow">
+                            <div className="grow">
                                 <Link
                                     to={`/shop/${item.product?.uuid}`}
                                     className="font-medium text-text-primary hover:text-primary-600"

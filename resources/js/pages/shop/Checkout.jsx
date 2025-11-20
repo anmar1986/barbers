@@ -646,7 +646,7 @@ const Checkout = () => {
                                 <div className="space-y-4">
                                     {cart?.items?.map((item) => (
                                         <div key={item.id} className="flex gap-4 pb-4 border-b border-border last:border-0">
-                                            <div className="w-16 h-16 bg-surface rounded overflow-hidden flex-shrink-0">
+                                            <div className="w-16 h-16 bg-surface rounded overflow-hidden shrink-0">
                                                 {item.product?.image_url && (
                                                     <img
                                                         src={item.product.image_url}
@@ -655,7 +655,7 @@ const Checkout = () => {
                                                     />
                                                 )}
                                             </div>
-                                            <div className="flex-grow">
+                                            <div className="grow">
                                                 <h4 className="font-medium text-text-primary">{item.product?.name}</h4>
                                                 <p className="text-sm text-text-secondary">Quantity: {item.quantity}</p>
                                             </div>
@@ -717,19 +717,19 @@ const Checkout = () => {
 
                         <div className="text-sm text-text-secondary space-y-2">
                             <p className="flex items-start">
-                                <svg className="h-5 w-5 text-success mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-5 w-5 text-success mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Secure checkout
                             </p>
                             <p className="flex items-start">
-                                <svg className="h-5 w-5 text-success mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-5 w-5 text-success mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Free shipping on all orders
                             </p>
                             <p className="flex items-start">
-                                <svg className="h-5 w-5 text-success mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-5 w-5 text-success mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 30-day return policy
