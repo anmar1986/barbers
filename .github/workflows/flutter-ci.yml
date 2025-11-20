@@ -154,6 +154,11 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Setup Environment
+        run: |
+          mkdir -p assets/images assets/icons
+          touch .env
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -227,6 +232,11 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Setup Environment
+        run: |
+          mkdir -p assets/images assets/icons
+          touch .env
+
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -235,7 +245,7 @@ jobs:
       - name: Install CocoaPods
         run: |
           cd ios
-          pod install
+          pod install --repo-update
 
       # Configure signing for release builds
       - name: Import Provisioning Profile (Release only)
@@ -310,8 +320,13 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Setup Environment
+        run: |
+          mkdir -p assets/images assets/icons
+          touch .env
+
       - name: Build Web App
-        run: flutter build web --release --web-renderer canvaskit
+        run: flutter build web --release
 
       - name: Upload Web Artifacts
         uses: actions/upload-artifact@v4
