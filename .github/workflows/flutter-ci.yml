@@ -122,7 +122,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: |
-      github.event_name == 'push' || 
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_call' ||
       (github.event_name == 'workflow_dispatch' && 
        (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all'))
     defaults:
@@ -207,7 +208,8 @@ jobs:
     runs-on: macos-latest
     needs: test
     if: |
-      github.event_name == 'push' || 
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_call' ||
       (github.event_name == 'workflow_dispatch' && 
        (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all'))
     defaults:
@@ -299,7 +301,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: |
-      github.event_name == 'push' || 
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_call' ||
       (github.event_name == 'workflow_dispatch' && 
        (github.event.inputs.platform == 'web' || github.event.inputs.platform == 'all'))
     defaults:
@@ -342,77 +345,3 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           du -sh build/web >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-  deploy-android-internal:
-    name: Deploy Android to Internal Testing
-    runs-on: ubuntu-latest
-    needs: build-android
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-
-    steps:
-      - name: Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apk-release
-
-      - name: Upload to Google Play Internal Testing
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.yourcompany.barber_social_app
-          releaseFiles: '**/*.aab'
-          track: internal
-          status: draft
-        continue-on-error: true
-
-  deploy-android-production:
-    name: Deploy Android to Production
-    runs-on: ubuntu-latest
-    needs: build-android
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apk-release
-
-      - name: Upload to Google Play Beta Testing
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.yourcompany.barber_social_app
-          releaseFiles: '**/*.aab'
-          track: beta
-          status: draft
-        continue-on-error: true
-
-  deploy-web:
-    name: Deploy Web App
-    runs-on: ubuntu-latest
-    needs: build-web
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Download Web Build
-        uses: actions/download-artifact@v4
-        with:
-          name: flutter-web-build
-          path: web-build
-
-      # Deploy to Firebase Hosting
-      # - name: Deploy to Firebase Hosting
-      #   uses: FirebaseExtended/action-hosting-deploy@v0
-      #   with:
-      #     repoToken: '${{ secrets.GITHUB_TOKEN }}'
-      #     firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-      #     channelId: live
-      #     projectId: your-project-id
-      #     target: production
-
-      # Or deploy to Vercel/Netlify/S3
-      - name: Deployment Summary
-        run: |
-          echo "### 🚀 Flutter Web Deployed" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
