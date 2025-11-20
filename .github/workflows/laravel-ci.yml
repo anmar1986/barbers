@@ -63,7 +63,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress --no-suggest
+        run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Copy .env
         run: cp .env.example .env
@@ -115,7 +115,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress --no-suggest
+        run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Run Laravel Pint (Code Style Check)
         run: ./vendor/bin/pint --test
