@@ -4,6 +4,9 @@ namespace App\Modules\Shop\Models;
 
 use App\Modules\Business\Models\Business;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -68,22 +71,22 @@ class Product extends Model
         return 'uuid';
     }
 
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
     }
 
-    public function orderItems()
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -91,7 +94,7 @@ class Product extends Model
     /**
      * Get the primary image for the product.
      */
-    public function primaryImage()
+    public function primaryImage(): HasOne
     {
         return $this->hasOne(ProductImage::class)->where('is_primary', true);
     }
@@ -119,7 +122,7 @@ class Product extends Model
     /**
      * Get discount percentage.
      */
-    public function getDiscountPercentageAttribute(): ?int
+    public function getDiscountPercentageAttribute(): ?float
     {
         if (! $this->hasDiscount()) {
             return null;

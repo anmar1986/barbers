@@ -36,10 +36,13 @@ class VideoController extends Controller
         $limit = $request->input('limit', 20);
         $videos = $this->videoService->getVideoFeed($filters, $limit);
 
+        /** @var \App\Modules\Videos\Models\Video|null $lastVideo */
+        $lastVideo = $videos->last();
+
         return response()->json([
             'success' => true,
             'data' => VideoResource::collection($videos),
-            'cursor' => $videos->last()?->id,
+            'cursor' => $lastVideo?->id,
         ]);
     }
 
@@ -125,10 +128,13 @@ class VideoController extends Controller
      */
     public function update(UpdateVideoRequest $request, string $uuid): JsonResponse
     {
+        /** @var \App\Modules\Videos\Models\Video $video */
         $video = Video::where('uuid', $uuid)->firstOrFail();
 
         // Verify user owns the business
-        if ($video->business->user_id !== $request->user()->id) {
+        /** @var \App\Modules\Business\Models\Business $business */
+        $business = $video->business;
+        if ($business->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -149,10 +155,13 @@ class VideoController extends Controller
      */
     public function destroy(Request $request, string $uuid): JsonResponse
     {
+        /** @var \App\Modules\Videos\Models\Video $video */
         $video = Video::where('uuid', $uuid)->firstOrFail();
 
         // Verify user owns the business
-        if ($video->business->user_id !== $request->user()->id) {
+        /** @var \App\Modules\Business\Models\Business $business */
+        $business = $video->business;
+        if ($business->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',

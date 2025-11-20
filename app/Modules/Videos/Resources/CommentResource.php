@@ -2,9 +2,13 @@
 
 namespace App\Modules\Videos\Resources;
 
+use App\Modules\Videos\Models\VideoComment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin VideoComment
+ */
 class CommentResource extends JsonResource
 {
     /**

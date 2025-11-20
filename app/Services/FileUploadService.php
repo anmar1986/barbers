@@ -185,7 +185,7 @@ class FileUploadService
      * Get video duration in seconds.
      * Note: This is a placeholder. In production, use FFmpeg or similar library.
      */
-    private function getVideoDuration(UploadedFile $file): ?int
+    private function getVideoDuration(UploadedFile $file): null
     {
         // TODO: Implement with FFmpeg
         // For now, return null

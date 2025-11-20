@@ -160,6 +160,7 @@ class OrderService
 
         // Handle cancellation - restore stock
         if ($status === 'cancelled' && ! in_array($order->status, ['cancelled', 'delivered', 'refunded'])) {
+            /** @var \App\Modules\Shop\Models\OrderItem $item */
             foreach ($order->items as $item) {
                 $this->productService->restoreStock($item->product_id, $item->quantity);
             }

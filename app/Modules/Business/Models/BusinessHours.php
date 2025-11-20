@@ -3,13 +3,14 @@
 namespace App\Modules\Business\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BusinessHours extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'business_id',
@@ -35,7 +36,7 @@ class BusinessHours extends Model
     /**
      * Get the business that owns the hours.
      */
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }

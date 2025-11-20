@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Modules\Videos\Models\Video;
 use Illuminate\Support\Facades\DB;
 
 class AnalyticsService
@@ -132,8 +133,7 @@ class AnalyticsService
             ->get();
 
         // Top videos
-        $topVideos = DB::table('videos')
-            ->with('business')
+        $topVideos = Video::with('business')
             ->orderBy('view_count', 'desc')
             ->limit(10)
             ->select('uuid', 'title', 'view_count', 'like_count', 'business_id')

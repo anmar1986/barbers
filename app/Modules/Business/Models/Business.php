@@ -8,6 +8,9 @@ use App\Modules\Videos\Models\Video;
 use Database\Factories\BusinessFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -26,7 +29,7 @@ class Business extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'uuid',
@@ -107,7 +110,7 @@ class Business extends Model
     /**
      * Get the user that owns the business.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -115,7 +118,7 @@ class Business extends Model
     /**
      * Get the business hours for the business.
      */
-    public function hours()
+    public function hours(): HasMany
     {
         return $this->hasMany(BusinessHours::class);
     }
@@ -123,7 +126,7 @@ class Business extends Model
     /**
      * Get the services offered by the business.
      */
-    public function services()
+    public function services(): HasMany
     {
         return $this->hasMany(Service::class);
     }
@@ -131,7 +134,7 @@ class Business extends Model
     /**
      * Get the media gallery for the business.
      */
-    public function gallery()
+    public function gallery(): HasMany
     {
         return $this->hasMany(MediaGallery::class);
     }
@@ -139,7 +142,7 @@ class Business extends Model
     /**
      * Get the videos posted by the business.
      */
-    public function videos()
+    public function videos(): HasMany
     {
         return $this->hasMany(Video::class);
     }
@@ -147,7 +150,7 @@ class Business extends Model
     /**
      * Get the products sold by the business.
      */
-    public function products()
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
@@ -155,7 +158,7 @@ class Business extends Model
     /**
      * Get the reviews for the business.
      */
-    public function reviews()
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
@@ -163,7 +166,7 @@ class Business extends Model
     /**
      * Get the followers of the business.
      */
-    public function followers()
+    public function followers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'business_id', 'follower_id');
     }

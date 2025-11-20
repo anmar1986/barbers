@@ -4,6 +4,7 @@ namespace App\Modules\Business\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Review extends Model
@@ -13,7 +14,7 @@ class Review extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'business_id',
@@ -40,7 +41,7 @@ class Review extends Model
     /**
      * Get the business being reviewed.
      */
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
@@ -48,7 +49,7 @@ class Review extends Model
     /**
      * Get the user who wrote the review.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

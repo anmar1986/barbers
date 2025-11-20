@@ -4,6 +4,8 @@ namespace App\Modules\Videos\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VideoComment extends Model
@@ -19,22 +21,22 @@ class VideoComment extends Model
         ];
     }
 
-    public function video()
+    public function video(): BelongsTo
     {
         return $this->belongsTo(Video::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function parent()
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(VideoComment::class, 'parent_id');
     }
 
-    public function replies()
+    public function replies(): HasMany
     {
         return $this->hasMany(VideoComment::class, 'parent_id');
     }

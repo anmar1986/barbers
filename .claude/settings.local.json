@@ -21,7 +21,8 @@
       "Bash(flutter create:*)",
       "Bash(flutter pub get:*)",
       "Bash(flutter analyze:*)",
-      "Bash(flutter doctor:*)"
+      "Bash(flutter doctor:*)",
+      "Bash(./vendor/bin/phpstan:*)"
     ],
     "deny": [],
     "ask": []

@@ -18,8 +18,8 @@ class VideoProcessingService
         try {
             // Initialize FFMpeg
             $this->ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries' => env('FFMPEG_BINARIES', 'ffmpeg'),
-                'ffprobe.binaries' => env('FFPROBE_BINARIES', 'ffprobe'),
+                'ffmpeg.binaries' => config('services.ffmpeg.binaries', 'ffmpeg'),
+                'ffprobe.binaries' => config('services.ffmpeg.ffprobe_binaries', 'ffprobe'),
                 'timeout' => 3600, // 1 hour timeout
                 'ffmpeg.threads' => 4,
             ]);
@@ -160,7 +160,7 @@ class VideoProcessingService
             }
 
             $ffprobe = \FFMpeg\FFProbe::create([
-                'ffprobe.binaries' => env('FFPROBE_BINARIES', 'ffprobe'),
+                'ffprobe.binaries' => config('services.ffmpeg.ffprobe_binaries', 'ffprobe'),
             ]);
 
             $duration = $ffprobe

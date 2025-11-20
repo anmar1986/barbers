@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Modules\Business\Models\Business;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +32,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read string $name
+ * @property-read \App\Modules\Business\Models\Business|null $business
  */
 class User extends Authenticatable
 {
@@ -38,7 +41,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'uuid',
@@ -58,7 +61,7 @@ class User extends Authenticatable
     /**
      * The attributes excluded from the model's JSON form.
      *
-     * @var array
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -69,7 +72,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be cast to native types.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $casts = [
         'permissions' => 'array',
@@ -109,7 +112,7 @@ class User extends Authenticatable
     public function setNameAttribute($value): void
     {
         $parts = explode(' ', $value, 2);
-        $this->attributes['first_name'] = $parts[0] ?? '';
+        $this->attributes['first_name'] = $parts[0];
         $this->attributes['last_name'] = $parts[1] ?? '';
     }
 
@@ -121,5 +124,21 @@ class User extends Authenticatable
     public function setPasswordAttribute($value): void
     {
         $this->attributes['password'] = Hash::make($value);
+    }
+
+    /**
+     * Get the businesses owned by this user.
+     */
+    public function businesses(): HasMany
+    {
+        return $this->hasMany(Business::class);
+    }
+
+    /**
+     * Get the primary business for this user (for business-type users).
+     */
+    public function business()
+    {
+        return $this->businesses()->first();
     }
 }

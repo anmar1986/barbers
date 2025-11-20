@@ -4,6 +4,8 @@ namespace App\Modules\User\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Favorite extends Model
 {
@@ -16,7 +18,7 @@ class Favorite extends Model
     /**
      * Get the user who favorited.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -24,7 +26,7 @@ class Favorite extends Model
     /**
      * Get the favoritable model (polymorphic).
      */
-    public function favoritable()
+    public function favoritable(): MorphTo
     {
         return $this->morphTo();
     }

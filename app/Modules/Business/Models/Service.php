@@ -3,6 +3,7 @@
 namespace App\Modules\Business\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class Service extends Model
@@ -24,7 +25,7 @@ class Service extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'business_id',
@@ -59,7 +60,7 @@ class Service extends Model
     /**
      * Get the business that offers this service.
      */
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }

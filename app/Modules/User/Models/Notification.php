@@ -4,6 +4,7 @@ namespace App\Modules\User\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
@@ -29,7 +30,7 @@ class Notification extends Model
     /**
      * Get the user who owns the notification.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

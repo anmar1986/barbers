@@ -84,7 +84,7 @@ class ProductService
             ->firstOrFail();
 
         // Increment view count
-        $product->increment('view_count');
+        Product::where('id', $product->id)->increment('view_count');
 
         return $product;
     }
@@ -133,10 +133,13 @@ class ProductService
     {
         DB::beginTransaction();
         try {
+            /** @var \App\Modules\Shop\Models\Product $product */
             $product = Product::where('uuid', $uuid)->firstOrFail();
 
             // Check authorization - only business owner can update
-            if ($product->business->user_id !== $userId) {
+            /** @var \App\Modules\Business\Models\Business $business */
+            $business = $product->business;
+            if ($business->user_id !== $userId) {
                 throw new \Exception('Unauthorized to update this product');
             }
 
@@ -151,6 +154,7 @@ class ProductService
             if (isset($data['images'])) {
                 // Delete old images if replacing
                 if (! empty($data['replace_images'])) {
+                    /** @var \App\Modules\Shop\Models\ProductImage $image */
                     foreach ($product->images as $image) {
                         Storage::disk('public')->delete($image->image_url);
                         $image->delete();
@@ -185,14 +189,18 @@ class ProductService
     {
         DB::beginTransaction();
         try {
+            /** @var \App\Modules\Shop\Models\Product $product */
             $product = Product::where('uuid', $uuid)->firstOrFail();
 
             // Check authorization
-            if ($product->business->user_id !== $userId) {
+            /** @var \App\Modules\Business\Models\Business $business */
+            $business = $product->business;
+            if ($business->user_id !== $userId) {
                 throw new \Exception('Unauthorized to delete this product');
             }
 
             // Delete product images from storage
+            /** @var \App\Modules\Shop\Models\ProductImage $image */
             foreach ($product->images as $image) {
                 Storage::disk('public')->delete($image->image_url);
             }
@@ -215,10 +223,13 @@ class ProductService
      */
     public function updateStock(string $uuid, int $quantity, $userId)
     {
+        /** @var \App\Modules\Shop\Models\Product $product */
         $product = Product::where('uuid', $uuid)->firstOrFail();
 
         // Check authorization
-        if ($product->business->user_id !== $userId) {
+        /** @var \App\Modules\Business\Models\Business $business */
+        $business = $product->business;
+        if ($business->user_id !== $userId) {
             throw new \Exception('Unauthorized to update stock');
         }
 
@@ -237,7 +248,7 @@ class ProductService
         // Create review (implementation would depend on your review system)
         // For now, just update the product rating
 
-        $product->increment('review_count');
+        Product::where('id', $product->id)->increment('review_count');
 
         // Recalculate average rating
         $newRating = (($product->rating * ($product->review_count - 1)) + $reviewData['rating']) / $product->review_count;
@@ -258,7 +269,7 @@ class ProductService
                 throw new \Exception("Insufficient stock for product: {$product->name}");
             }
 
-            $product->decrement('stock_quantity', $quantity);
+            Product::where('id', $product->id)->decrement('stock_quantity', $quantity);
         }
 
         return $product;
@@ -272,7 +283,7 @@ class ProductService
         $product = Product::findOrFail($productId);
 
         if ($product->track_inventory) {
-            $product->increment('stock_quantity', $quantity);
+            Product::where('id', $product->id)->increment('stock_quantity', $quantity);
         }
 
         return $product;

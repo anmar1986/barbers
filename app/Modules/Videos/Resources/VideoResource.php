@@ -2,9 +2,13 @@
 
 namespace App\Modules\Videos\Resources;
 
+use App\Modules\Videos\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Video
+ */
 class VideoResource extends JsonResource
 {
     /**
@@ -38,7 +42,7 @@ class VideoResource extends JsonResource
             'like_count' => $this->like_count,
             'comment_count' => $this->comment_count,
             'share_count' => $this->share_count,
-            'is_published' => $this->is_published,
+            'is_published' => $this->isPublished(),
             'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

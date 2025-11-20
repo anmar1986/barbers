@@ -3,13 +3,17 @@
 namespace App\Modules\Business\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $media_type
+ */
 class MediaGallery extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'business_id',
@@ -37,7 +41,7 @@ class MediaGallery extends Model
     /**
      * Get the business that owns the media.
      */
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }

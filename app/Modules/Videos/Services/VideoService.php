@@ -210,11 +210,11 @@ class VideoService
      */
     public function deleteComment(VideoComment $comment): bool
     {
-        $video = $comment->video;
+        $videoId = $comment->video_id;
         $deleted = $comment->delete();
 
         if ($deleted) {
-            Video::where('id', $video->id)->decrement('comment_count');
+            Video::where('id', $videoId)->decrement('comment_count');
         }
 
         return $deleted;

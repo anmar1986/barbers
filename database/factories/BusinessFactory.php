@@ -15,7 +15,7 @@ class BusinessFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Business>
      */
     protected $model = Business::class;
 
@@ -38,7 +38,7 @@ class BusinessFactory extends Factory
             'description' => fake()->paragraph(3),
             'address' => fake()->streetAddress(),
             'city' => fake()->city(),
-            'state' => fake()->state(),
+            'state' => fake()->randomElement(['CA', 'NY', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI']),
             'zip_code' => fake()->postcode(),
             'country' => 'USA',
             'latitude' => fake()->latitude(25, 50),

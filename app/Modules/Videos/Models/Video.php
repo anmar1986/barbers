@@ -5,6 +5,8 @@ namespace App\Modules\Videos\Models;
 use App\Models\User;
 use App\Modules\Business\Models\Business;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -15,7 +17,7 @@ class Video extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'uuid',
@@ -81,7 +83,7 @@ class Video extends Model
     /**
      * Get the business that posted the video.
      */
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
@@ -89,7 +91,7 @@ class Video extends Model
     /**
      * Get the hashtags for the video.
      */
-    public function hashtags()
+    public function hashtags(): HasMany
     {
         return $this->hasMany(VideoHashtag::class);
     }
@@ -97,7 +99,7 @@ class Video extends Model
     /**
      * Get the likes for the video.
      */
-    public function likes()
+    public function likes(): HasMany
     {
         return $this->hasMany(VideoLike::class);
     }
@@ -105,7 +107,7 @@ class Video extends Model
     /**
      * Get the comments for the video.
      */
-    public function comments()
+    public function comments(): HasMany
     {
         return $this->hasMany(VideoComment::class)->whereNull('parent_id');
     }
@@ -113,7 +115,7 @@ class Video extends Model
     /**
      * Get all comments including replies.
      */
-    public function allComments()
+    public function allComments(): HasMany
     {
         return $this->hasMany(VideoComment::class);
     }
