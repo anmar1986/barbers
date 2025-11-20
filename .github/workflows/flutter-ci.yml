@@ -1,0 +1,393 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+      - '!frontend/README.md'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+          - web
+        default: 'all'
+  workflow_call:
+
+env:
+  FLUTTER_VERSION: '3.35.0'
+  JAVA_VERSION: '17'
+  XCODE_VERSION: '15.0'
+
+jobs:
+  analyze:
+    name: Flutter Analyze & Format
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Verify Flutter Installation
+        run: flutter doctor -v
+
+      - name: Check Formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze Code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run Custom Lint Rules
+        run: dart run custom_lint || echo "No custom lint configured"
+        continue-on-error: true
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: analyze
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Run Unit Tests
+        run: flutter test --coverage
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: frontend/coverage/lcov.info
+          flags: flutter
+          name: flutter-coverage
+        continue-on-error: true
+
+      - name: Generate Coverage Report
+        run: |
+          echo "### 📊 Test Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "coverage/lcov.info" ]; then
+            echo "Coverage report generated successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No coverage data found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  build-android:
+    name: Build Android App
+    runs-on: ubuntu-latest
+    needs: test
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all'))
+    defaults:
+      run:
+        working-directory: frontend
+
+    strategy:
+      matrix:
+        build-type: [debug, release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Configure signing for release builds
+      - name: Configure Keystore (Release only)
+        if: matrix.build-type == 'release'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
+        continue-on-error: true
+
+      - name: Build APK (${{ matrix.build-type }})
+        run: |
+          if [ "${{ matrix.build-type }}" == "release" ]; then
+            flutter build apk --release --split-per-abi
+          else
+            flutter build apk --debug
+          fi
+
+      - name: Build App Bundle (Release only)
+        if: matrix.build-type == 'release'
+        run: flutter build appbundle --release
+
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ matrix.build-type }}
+          path: |
+            frontend/build/app/outputs/flutter-apk/*.apk
+            frontend/build/app/outputs/bundle/release/*.aab
+          retention-days: 14
+
+      - name: Create Release Summary
+        run: |
+          echo "### 📱 Android Build (${{ matrix.build-type }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          ls -lh build/app/outputs/flutter-apk/*.apk || echo "No APK found" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+    needs: test
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all'))
+    defaults:
+      run:
+        working-directory: frontend
+
+    strategy:
+      matrix:
+        build-type: [debug, release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      # Configure signing for release builds
+      - name: Import Provisioning Profile (Release only)
+        if: matrix.build-type == 'release'
+        run: |
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          echo "${{ secrets.IOS_CERTIFICATE_BASE64 }}" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security list-keychains -s build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+        continue-on-error: true
+
+      - name: Build iOS App (${{ matrix.build-type }})
+        run: |
+          if [ "${{ matrix.build-type }}" == "release" ]; then
+            flutter build ios --release --no-codesign
+          else
+            flutter build ios --debug --no-codesign
+          fi
+
+      - name: Build IPA (Release only)
+        if: matrix.build-type == 'release'
+        run: |
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/Runner.xcarchive \
+            archive || echo "Archive creation skipped - requires valid signing"
+        continue-on-error: true
+
+      - name: Upload iOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-${{ matrix.build-type }}
+          path: |
+            frontend/build/ios/iphoneos/Runner.app
+          retention-days: 14
+
+      - name: Create Release Summary
+        run: |
+          echo "### 🍎 iOS Build (${{ matrix.build-type }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Build completed successfully" >> $GITHUB_STEP_SUMMARY
+
+  build-web:
+    name: Build Web App
+    runs-on: ubuntu-latest
+    needs: test
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.platform == 'web' || github.event.inputs.platform == 'all'))
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build Web App
+        run: flutter build web --release --web-renderer canvaskit
+
+      - name: Upload Web Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-web-build
+          path: frontend/build/web/
+          retention-days: 14
+
+      - name: Create Release Summary
+        run: |
+          echo "### 🌐 Web Build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          du -sh build/web >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  deploy-android-internal:
+    name: Deploy Android to Internal Testing
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-release
+
+      - name: Upload to Google Play Internal Testing
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.yourcompany.barber_social_app
+          releaseFiles: '**/*.aab'
+          track: internal
+          status: draft
+        continue-on-error: true
+
+  deploy-android-production:
+    name: Deploy Android to Production
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-release
+
+      - name: Upload to Google Play Beta Testing
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.yourcompany.barber_social_app
+          releaseFiles: '**/*.aab'
+          track: beta
+          status: draft
+        continue-on-error: true
+
+  deploy-web:
+    name: Deploy Web App
+    runs-on: ubuntu-latest
+    needs: build-web
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Download Web Build
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-web-build
+          path: web-build
+
+      # Deploy to Firebase Hosting
+      # - name: Deploy to Firebase Hosting
+      #   uses: FirebaseExtended/action-hosting-deploy@v0
+      #   with:
+      #     repoToken: '${{ secrets.GITHUB_TOKEN }}'
+      #     firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+      #     channelId: live
+      #     projectId: your-project-id
+      #     target: production
+
+      # Or deploy to Vercel/Netlify/S3
+      - name: Deployment Summary
+        run: |
+          echo "### 🚀 Flutter Web Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

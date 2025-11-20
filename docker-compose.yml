@@ -1,0 +1,190 @@
+version: '3.8'
+
+services:
+  # Laravel Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    image: barber-social-app:latest
+    container_name: barber-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-true}
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=${DB_CONNECTION:-mysql}
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-barber_db}
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - barber-network
+
+  # Nginx Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: barber-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - barber-network
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: barber-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-barber_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_USER: ${DB_USERNAME:-barber_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - barber-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: barber-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - barber-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Queue Worker
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: barber-queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work --tries=3 --timeout=90
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - barber-network
+
+  # Scheduler (Cron)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: barber-scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: /bin/sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - barber-network
+
+  # Mailhog (Email Testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: barber-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - barber-network
+
+  # PHPMyAdmin (Optional - Database Management)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: barber-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_PASSWORD:-password}
+    depends_on:
+      - mysql
+    networks:
+      - barber-network
+
+  # Node.js Development Server (Vite)
+  vite:
+    image: node:20-alpine
+    container_name: barber-vite
+    working_dir: /var/www/html
+    command: npm run dev
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - barber-network
+
+networks:
+  barber-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local

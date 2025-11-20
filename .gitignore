@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+.env.local
+.env.staging
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -22,3 +24,20 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Docker volumes and data
+mysql-data/
+redis-data/
+
+# Deployment and backups
+*.tar.gz
+backups/
+
+# Certificates and keys (NEVER commit)
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.mobileprovision
+key.properties

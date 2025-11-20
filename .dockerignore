@@ -1,0 +1,38 @@
+# Docker ignore for optimized builds
+.git
+.gitignore
+.github
+.env.example
+README.md
+QUICK_START.md
+VIDEO_PROCESSING_SETUP.md
+TEST_LOGIN.md
+ADMIN_ACCESS_GUIDE.md
+CI_CD_DOCUMENTATION.md
+
+# Testing
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Development
+storage/logs/*.log
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Backups
+*.sql
+*.sql.gz
+*.tar.gz
+backups/
