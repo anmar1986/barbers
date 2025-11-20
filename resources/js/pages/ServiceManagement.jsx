@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { businessManagementAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Card from '../components/Card';

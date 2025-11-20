@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-
+import { useState } from 'react';
 const MediaGallery = ({ items = [], onDelete = null }) => {
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);

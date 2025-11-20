@@ -1,5 +1,4 @@
-import React, { useState, useRef, useId } from 'react';
-
+import { useState, useRef, useId } from 'react';
 const ImageUpload = ({
     onUpload,
     maxSize = 5, // MB

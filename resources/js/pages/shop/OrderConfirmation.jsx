@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { orderAPI } from '../../services/api';
 
@@ -125,7 +125,7 @@ const OrderConfirmation = () => {
                             const isCurrent = order.status === status;
 
                             return (
-                                <React.Fragment key={status}>
+                                <Fragment key={status}>
                                     <div className="flex flex-col items-center">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
                                             isCompleted || isCurrent ? 'bg-primary-600 text-white' : 'bg-gray-300 text-gray-600'
@@ -145,7 +145,7 @@ const OrderConfirmation = () => {
                                             isCompleted ? 'bg-primary-600' : 'bg-gray-300'
                                         }`}></div>
                                     )}
-                                </React.Fragment>
+                                </Fragment>
                             );
                         })}
                     </div>

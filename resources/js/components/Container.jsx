@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Container component for consistent max-width and padding across pages
  * Based on the PRD design system

@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Card component for consistent card styling
  */

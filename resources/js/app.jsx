@@ -1,5 +1,5 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { StrictMode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -172,9 +172,9 @@ function App() {
 
 const root = createRoot(document.getElementById('app'));
 root.render(
-    <React.StrictMode>
+    <StrictMode>
         <BrowserRouter>
             <App />
         </BrowserRouter>
-    </React.StrictMode>
+    </StrictMode>
 );

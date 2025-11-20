@@ -1,5 +1,4 @@
-import React from 'react';
-
+import { useEffect } from 'react';
 /**
  * Toast Notification component
  */
@@ -10,7 +9,7 @@ const Toast = ({
     autoClose = true,
     duration = 3000,
 }) => {
-    React.useEffect(() => {
+    useEffect(() => {
         if (autoClose) {
             const timer = setTimeout(() => {
                 onClose?.();

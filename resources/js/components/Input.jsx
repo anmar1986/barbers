@@ -1,5 +1,4 @@
-import React, { forwardRef, useId } from 'react';
-
+import { useId, forwardRef } from 'react';
 /**
  * Input component with consistent styling
  */

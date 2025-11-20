@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Badge component for status indicators, tags, etc.
  */

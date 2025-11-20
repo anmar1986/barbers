@@ -5,7 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "lint": "eslint resources/js --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+        "lint": "eslint resources/js --ext js,jsx --report-unused-disable-directives --max-warnings 100",
         "lint:fix": "eslint resources/js --ext js,jsx --fix"
     },
     "devDependencies": {

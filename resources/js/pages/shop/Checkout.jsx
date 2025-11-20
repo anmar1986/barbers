@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cartAPI, orderAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -167,6 +167,33 @@ const Checkout = () => {
         setSubmitting(false);
     };
 
+    const handlePlaceOrder = async () => {
+        setError('');
+        setSubmitting(true);
+        
+        try {
+            const orderData = {
+                shipping_address: JSON.stringify(shippingInfo),
+                billing_address: JSON.stringify(shippingInfo),
+                payment_method: paymentInfo.method,
+                notes: ''
+            };
+
+            const response = await orderAPI.checkout(orderData);
+            const order = response.data.data || response.data;
+
+            showSuccess('Order placed successfully!');
+            navigate(`/orders/${order.order_number || order.uuid}`, {
+                state: { orderPlaced: true }
+            });
+        } catch (err) {
+            const errorMsg = err.response?.data?.message || 'Failed to place order';
+            setError(errorMsg);
+            showError(errorMsg);
+            setSubmitting(false);
+        }
+    };
+
     const formatPrice = (price) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -210,7 +237,7 @@ const Checkout = () => {
                         { num: 2, name: 'Payment' },
                         { num: 3, name: 'Review' }
                     ].map((step, idx) => (
-                        <React.Fragment key={step.num}>
+                        <Fragment key={step.num}>
                             <div className="flex items-center">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
                                     currentStep >= step.num
@@ -230,7 +257,7 @@ const Checkout = () => {
                                     currentStep > step.num ? 'bg-primary-600' : 'bg-gray-300'
                                 }`}></div>
                             )}
-                        </React.Fragment>
+                        </Fragment>
                     ))}
                 </div>
             </div>
