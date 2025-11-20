@@ -1,0 +1,36 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Analysis level (0-9, 9 is the strictest)
+    level: 5
+
+    # Paths to analyze
+    paths:
+        - app
+        - routes
+        - config
+        - database/factories
+        - database/seeders
+
+    # Paths to exclude
+    excludePaths:
+        - app/Orchid
+        - vendor
+        - storage
+        - bootstrap/cache
+        - node_modules
+
+    # Ignore errors in specific files or patterns
+    ignoreErrors:
+        # Ignore Orchid platform files
+        - '#.*Orchid.*#'
+        # Ignore IDE helper files
+        - '#.*_ide_helper.*#'
+
+    # Report errors but continue analysis
+    reportUnmatchedIgnoredErrors: false
+
+    # Parallel processing for faster analysis
+    parallel:
+        maximumNumberOfProcesses: 4

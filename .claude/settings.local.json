@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/anmar/Downloads/**)",
+      "Bash(Select-String -Pattern \"barber\")",
+      "Bash(php:*)",
+      "Bash(composer require:*)",
+      "Bash(composer show:*)",
+      "Bash(Select-String -Pattern \"export.*API|export.*api\" resources/js/services/api.js)",
+      "Bash(Select-Object -First 20)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(Get-Content \"C:\\xampp\\htdocs\\kerrar\\storage\\logs\\laravel.log\")",
+      "Bash(Select-Object -Last 100)",
+      "Bash(npm run dev:*)",
+      "Bash(\"C:/xampp/htdocs/kerrar/storage/logs/laravel.log\")",
+      "Bash(storage/logs/laravel.log)",
+      "Bash(cat:*)",
+      "Bash(composer phpstan:*)",
+      "Bash(npm install:*)",
+      "Bash(flutter create:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter doctor:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
