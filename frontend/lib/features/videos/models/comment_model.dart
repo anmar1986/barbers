@@ -37,8 +37,10 @@ class Comment extends Equatable {
       user: User.fromJson(json['user'] ?? {}),
       likeCount: json['like_count'] ?? json['likes_count'] ?? 0,
       isLiked: json['is_liked'] ?? json['liked'] ?? false,
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+          json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(
+          json['updated_at'] ?? DateTime.now().toIso8601String()),
       replies: json['replies'] != null
           ? (json['replies'] as List)
               .map((reply) => Comment.fromJson(reply))

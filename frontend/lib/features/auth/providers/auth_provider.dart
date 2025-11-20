@@ -59,8 +59,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     final result = await _authRepository.getProfile();
 
-    result
-        .onSuccess((user) {
+    result.onSuccess((user) {
       state = AuthState(
         user: user,
         isAuthenticated: true,
@@ -86,8 +85,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       password: password,
     );
 
-    result
-        .onSuccess((authResponse) {
+    result.onSuccess((authResponse) {
       state = AuthState(
         user: authResponse.user,
         isAuthenticated: true,
@@ -123,8 +121,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       phone: phone,
     );
 
-    result
-        .onSuccess((authResponse) {
+    result.onSuccess((authResponse) {
       state = AuthState(
         user: authResponse.user,
         isAuthenticated: true,

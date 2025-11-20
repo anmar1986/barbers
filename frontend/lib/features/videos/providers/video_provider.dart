@@ -76,8 +76,7 @@ class VideoFeedNotifier extends StateNotifier<VideoFeedState> {
       limit: 10,
     );
 
-    result
-        .onSuccess((videos) {
+    result.onSuccess((videos) {
       state = VideoFeedState(
         videos: refresh ? videos : [...state.videos, ...videos],
         isLoading: false,
@@ -103,8 +102,7 @@ class VideoFeedNotifier extends StateNotifier<VideoFeedState> {
       limit: 10,
     );
 
-    result
-        .onSuccess((videos) {
+    result.onSuccess((videos) {
       state = VideoFeedState(
         videos: [...state.videos, ...videos],
         isLoadingMore: false,
@@ -232,8 +230,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
 
     final result = await _repository.getComments(videoUuid);
 
-    result
-        .onSuccess((comments) {
+    result.onSuccess((comments) {
       state = CommentsState(
         comments: comments,
         isLoading: false,
@@ -278,7 +275,8 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
 }
 
 /// Comments Provider Factory
-final commentsProvider = StateNotifierProvider.family<CommentsNotifier,
-    CommentsState, String>((ref, videoUuid) {
+final commentsProvider =
+    StateNotifierProvider.family<CommentsNotifier, CommentsState, String>(
+        (ref, videoUuid) {
   return CommentsNotifier(ref.read(videoRepositoryProvider), videoUuid);
 });

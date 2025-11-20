@@ -11,7 +11,8 @@ class BusinessesTabScreen extends ConsumerStatefulWidget {
   const BusinessesTabScreen({super.key});
 
   @override
-  ConsumerState<BusinessesTabScreen> createState() => _BusinessesTabScreenState();
+  ConsumerState<BusinessesTabScreen> createState() =>
+      _BusinessesTabScreenState();
 }
 
 class _BusinessesTabScreenState extends ConsumerState<BusinessesTabScreen> {

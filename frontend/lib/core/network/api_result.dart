@@ -36,7 +36,8 @@ extension ApiResultExtension<T> on ApiResult<T> {
   T? get dataOrNull => this is Success<T> ? (this as Success<T>).data : null;
 
   /// Get error message if failed, null otherwise
-  String? get errorOrNull => this is Failure<T> ? (this as Failure<T>).message : null;
+  String? get errorOrNull =>
+      this is Failure<T> ? (this as Failure<T>).message : null;
 
   /// Execute callback if successful
   ApiResult<T> onSuccess(void Function(T data) callback) {

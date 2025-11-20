@@ -35,7 +35,8 @@ class BarberSocialApp extends ConsumerWidget {
       // Theme Configuration
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light, // TODO: Make this dynamic based on user preference
+      themeMode:
+          ThemeMode.light, // TODO: Make this dynamic based on user preference
 
       // Routing Configuration
       routerConfig: AppRouter.router,

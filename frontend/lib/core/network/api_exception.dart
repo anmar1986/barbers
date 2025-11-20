@@ -18,7 +18,8 @@ class ApiException implements Exception {
 class NetworkException extends ApiException {
   NetworkException({String? message})
       : super(
-          message: message ?? 'No internet connection. Please check your network.',
+          message:
+              message ?? 'No internet connection. Please check your network.',
         );
 }
 

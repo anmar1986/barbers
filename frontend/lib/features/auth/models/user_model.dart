@@ -35,7 +35,8 @@ class User extends Equatable {
   factory User.fromJson(Map<String, dynamic> json) {
     // Combine first_name and last_name if they exist, otherwise use name
     String fullName = json['name'] ?? '';
-    if (fullName.isEmpty && (json['first_name'] != null || json['last_name'] != null)) {
+    if (fullName.isEmpty &&
+        (json['first_name'] != null || json['last_name'] != null)) {
       final firstName = json['first_name']?.toString().trim() ?? '';
       final lastName = json['last_name']?.toString().trim() ?? '';
       fullName = '$firstName $lastName'.trim();

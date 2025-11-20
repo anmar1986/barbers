@@ -40,7 +40,6 @@ Future<void> _initializeApp() async {
     // ==================== INITIALIZE FIREBASE (OPTIONAL) ====================
     // Uncomment when Firebase is needed
     // await _initializeFirebase();
-
   } catch (e, stackTrace) {
     // Log initialization errors
     debugPrint('❌ Error initializing app: $e');

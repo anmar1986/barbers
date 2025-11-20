@@ -137,7 +137,8 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                             Icon(
                               Icons.chat_bubble_outline,
                               size: 60,
-                              color: AppColors.textSecondary.withValues(alpha: 0.5),
+                              color: AppColors.textSecondary
+                                  .withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -152,7 +153,8 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                               'Be the first to comment!',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary.withValues(alpha: 0.7),
+                                color: AppColors.textSecondary
+                                    .withValues(alpha: 0.7),
                               ),
                             ),
                           ],

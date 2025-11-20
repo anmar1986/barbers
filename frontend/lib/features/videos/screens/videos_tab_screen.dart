@@ -87,45 +87,45 @@ class _VideosTabScreenState extends ConsumerState<VideosTabScreen> {
       body: Stack(
         children: [
           PageView.builder(
-        controller: _pageController,
-        scrollDirection: Axis.vertical,
-        itemCount: videoFeedState.videos.length,
-        onPageChanged: (index) {
-          // Load more when reaching near the end
-          if (index >= videoFeedState.videos.length - 2 &&
-              !videoFeedState.isLoadingMore &&
-              videoFeedState.hasMore) {
-            ref.read(videoFeedProvider.notifier).loadMoreVideos();
-          }
-        },
-        itemBuilder: (context, index) {
-          final video = videoFeedState.videos[index];
-          return _VideoItem(
-            video: video,
-            onLike: () {
-              ref.read(videoFeedProvider.notifier).toggleLike(video.uuid);
+            controller: _pageController,
+            scrollDirection: Axis.vertical,
+            itemCount: videoFeedState.videos.length,
+            onPageChanged: (index) {
+              // Load more when reaching near the end
+              if (index >= videoFeedState.videos.length - 2 &&
+                  !videoFeedState.isLoadingMore &&
+                  videoFeedState.hasMore) {
+                ref.read(videoFeedProvider.notifier).loadMoreVideos();
+              }
             },
-            onComment: () {
-              showCommentsBottomSheet(
-                context,
-                videoUuid: video.uuid,
-                commentCount: video.commentCount,
-              );
-            },
-            onShare: () {
-              ShareUtils.showShareOptions(
-                context,
-                video,
-                () {
-                  ref
-                      .read(videoFeedProvider.notifier)
-                      .updateShareCount(video.uuid);
+            itemBuilder: (context, index) {
+              final video = videoFeedState.videos[index];
+              return _VideoItem(
+                video: video,
+                onLike: () {
+                  ref.read(videoFeedProvider.notifier).toggleLike(video.uuid);
+                },
+                onComment: () {
+                  showCommentsBottomSheet(
+                    context,
+                    videoUuid: video.uuid,
+                    commentCount: video.commentCount,
+                  );
+                },
+                onShare: () {
+                  ShareUtils.showShareOptions(
+                    context,
+                    video,
+                    () {
+                      ref
+                          .read(videoFeedProvider.notifier)
+                          .updateShareCount(video.uuid);
+                    },
+                  );
                 },
               );
             },
-          );
-        },
-      ),
+          ),
 
           // Upload Video FAB
           Positioned(

@@ -315,7 +315,9 @@ class _AccountTypeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.backgroundGrey,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.backgroundGrey,
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
             width: 2,

@@ -53,7 +53,8 @@ class SecondaryButton extends StatelessWidget {
                 width: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.textWhite),
                 ),
               )
             : Row(
