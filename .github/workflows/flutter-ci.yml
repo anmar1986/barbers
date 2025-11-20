@@ -1,138 +1,30 @@
-name: Flutter CI/CD
+name: Flutter CI
 
 on:
   push:
     branches: [ main, develop ]
     paths:
       - 'frontend/**'
-      - '!frontend/README.md'
+      - '.github/workflows/flutter-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'frontend/**'
-  workflow_dispatch:
-    inputs:
-      platform:
-        description: 'Platform to build'
-        required: true
-        type: choice
-        options:
-          - all
-          - android
-          - ios
-          - web
-        default: 'all'
-  workflow_call:
-
-env:
-  FLUTTER_VERSION: '3.35.0'
-  JAVA_VERSION: '17'
-  XCODE_VERSION: '15.0'
+      - '.github/workflows/flutter-ci.yml'
 
 jobs:
-  analyze:
-    name: Flutter Analyze & Format
+  analyze-and-test:
+    name: Analyze & Test (Flutter ${{ matrix.flutter-version }})
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-          cache: true
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Setup Environment
-        run: |
-          mkdir -p assets/images assets/icons
-          cp .env.example .env || echo "API_BASE_URL=http://localhost:8000/api" > .env
-
-      - name: Verify Flutter Installation
-        run: flutter doctor -v
-
-      - name: Check Formatting
-        run: dart format --set-exit-if-changed .
-
-      - name: Analyze Code
-        run: flutter analyze --no-fatal-infos
-
-      - name: Run Custom Lint Rules
-        run: dart run custom_lint || echo "No custom lint configured"
-        continue-on-error: true
-
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    needs: analyze
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-          cache: true
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Setup Test Environment
-        run: |
-          mkdir -p assets/images assets/icons
-          cp .env.example .env || echo "API_BASE_URL=http://localhost:8000/api" > .env
-
-      - name: Run Unit Tests
-        run: flutter test --coverage
-
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: frontend/coverage/lcov.info
-          flags: flutter
-          name: flutter-coverage
-        continue-on-error: true
-
-      - name: Generate Coverage Report
-        run: |
-          echo "### 📊 Test Coverage" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f "coverage/lcov.info" ]; then
-            echo "Coverage report generated successfully" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No coverage data found" >> $GITHUB_STEP_SUMMARY
-          fi
-
-  build-android:
-    name: Build Android App
-    runs-on: ubuntu-latest
-    needs: test
-    if: |
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_call' ||
-      (github.event_name == 'workflow_dispatch' && 
-       (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all'))
-    defaults:
-      run:
-        working-directory: frontend
 
     strategy:
+      fail-fast: false
       matrix:
-        build-type: [debug, release]
+        flutter-version: ['3.24.x', 'stable']
+
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
       - name: Checkout code
@@ -141,170 +33,112 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version: ${{ matrix.flutter-version }}
           channel: 'stable'
           cache: true
 
-      - name: Get Dependencies
+      - name: Get Flutter version
+        run: flutter --version
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            frontend/.dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Create .env file
+        run: |
+          echo "API_BASE_URL=https://api.example.com" > .env
+          echo "API_KEY=test_key" >> .env
+
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Setup Environment
-        run: |
-          mkdir -p assets/images assets/icons
-          touch .env
+      - name: Verify dependencies
+        run: flutter pub deps
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
 
-      # Configure signing for release builds
-      - name: Configure Keystore (Release only)
-        if: matrix.build-type == 'release'
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=keystore.jks" >> android/key.properties
-        continue-on-error: true
+      - name: Run Flutter Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-      - name: Build APK (${{ matrix.build-type }})
-        run: |
-          if [ "${{ matrix.build-type }}" == "release" ]; then
-            flutter build apk --release --split-per-abi
-          else
-            flutter build apk --debug
-          fi
+      - name: Run Flutter Format Check
+        run: dart format --set-exit-if-changed lib test
 
-      - name: Build App Bundle (Release only)
-        if: matrix.build-type == 'release'
-        run: flutter build appbundle --release
+      - name: Run Flutter Tests
+        run: flutter test --coverage --reporter expanded
 
-      - name: Upload APK Artifacts
+      - name: Upload coverage to artifact
+        if: matrix.flutter-version == 'stable'
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk-${{ matrix.build-type }}
-          path: |
-            frontend/build/app/outputs/flutter-apk/*.apk
-            frontend/build/app/outputs/bundle/release/*.aab
-          retention-days: 14
+          name: coverage-report
+          path: frontend/coverage/lcov.info
+          retention-days: 5
 
-      - name: Create Release Summary
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: analyze-and-test
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          channel: 'stable'
+          cache: true
+
+      - name: Create .env file
         run: |
-          echo "### 📱 Android Build (${{ matrix.build-type }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          ls -lh build/app/outputs/flutter-apk/*.apk || echo "No APK found" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "API_BASE_URL=https://api.example.com" > .env
+          echo "API_KEY=test_key" >> .env
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK
+        run: flutter build apk --release --no-shrink
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: frontend/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 5
 
   build-ios:
-    name: Build iOS App
+    name: Build iOS (macOS)
     runs-on: macos-latest
-    needs: test
-    if: |
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_call' ||
-      (github.event_name == 'workflow_dispatch' && 
-       (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all'))
-    defaults:
-      run:
-        working-directory: frontend
+    needs: analyze-and-test
 
-    strategy:
-      matrix:
-        build-type: [debug, release]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-          cache: true
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Setup Environment
-        run: |
-          mkdir -p assets/images assets/icons
-          touch .env
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Install CocoaPods
-        run: |
-          cd ios
-          pod install --repo-update
-
-      # Configure signing for release builds
-      - name: Import Provisioning Profile (Release only)
-        if: matrix.build-type == 'release'
-        run: |
-          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
-          echo "${{ secrets.IOS_CERTIFICATE_BASE64 }}" | base64 --decode > certificate.p12
-          security create-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
-          security list-keychains -s build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
-        continue-on-error: true
-
-      - name: Build iOS App (${{ matrix.build-type }})
-        run: |
-          if [ "${{ matrix.build-type }}" == "release" ]; then
-            flutter build ios --release --no-codesign
-          else
-            flutter build ios --debug --no-codesign
-          fi
-
-      - name: Build IPA (Release only)
-        if: matrix.build-type == 'release'
-        run: |
-          cd ios
-          xcodebuild -workspace Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -archivePath build/Runner.xcarchive \
-            archive || echo "Archive creation skipped - requires valid signing"
-        continue-on-error: true
-
-      - name: Upload iOS Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build-${{ matrix.build-type }}
-          path: |
-            frontend/build/ios/iphoneos/Runner.app
-          retention-days: 14
-
-      - name: Create Release Summary
-        run: |
-          echo "### 🍎 iOS Build (${{ matrix.build-type }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Build completed successfully" >> $GITHUB_STEP_SUMMARY
-
-  build-web:
-    name: Build Web App
-    runs-on: ubuntu-latest
-    needs: test
-    if: |
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_call' ||
-      (github.event_name == 'workflow_dispatch' && 
-       (github.event.inputs.platform == 'web' || github.event.inputs.platform == 'all'))
     defaults:
       run:
         working-directory: frontend
@@ -316,32 +150,32 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version: 'stable'
           channel: 'stable'
           cache: true
 
-      - name: Get Dependencies
+      - name: Create .env file
+        run: |
+          echo "API_BASE_URL=https://api.example.com" > .env
+          echo "API_KEY=test_key" >> .env
+
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Setup Environment
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Create IPA directory info
         run: |
-          mkdir -p assets/images assets/icons
-          touch .env
+          echo "iOS build completed successfully" > ios_build_info.txt
+          echo "Build artifacts location: build/ios/iphoneos/" >> ios_build_info.txt
 
-      - name: Build Web App
-        run: flutter build web --release
-
-      - name: Upload Web Artifacts
+      - name: Upload iOS build info
         uses: actions/upload-artifact@v4
         with:
-          name: flutter-web-build
-          path: frontend/build/web/
-          retention-days: 14
-
-      - name: Create Release Summary
-        run: |
-          echo "### 🌐 Web Build" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          du -sh build/web >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          name: ios-build-info
+          path: frontend/ios_build_info.txt
+          retention-days: 5

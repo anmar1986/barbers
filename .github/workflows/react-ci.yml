@@ -1,271 +1,69 @@
-name: React CI/CD
+name: React CI
 
 on:
   push:
     branches: [ main, develop ]
     paths:
       - 'resources/js/**'
-      - 'resources/views/**'
+      - 'resources/css/**'
       - 'package.json'
       - 'package-lock.json'
       - 'vite.config.js'
-      - 'tailwind.config.js'
+      - 'eslint.config.js'
+      - '.github/workflows/react-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'resources/js/**'
-      - 'resources/views/**'
+      - 'resources/css/**'
       - 'package.json'
       - 'package-lock.json'
-  workflow_dispatch:
-  workflow_call:
-
-env:
-  NODE_VERSION: '20'
+      - 'vite.config.js'
+      - 'eslint.config.js'
+      - '.github/workflows/react-ci.yml'
 
 jobs:
-  lint-and-format:
-    name: Lint & Format Check
+  lint-and-build:
+    name: Lint & Build
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ['20.x', '22.x']
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      - name: Check Code Formatting (Prettier)
-        run: |
-          npx prettier --check "resources/js/**/*.{js,jsx,ts,tsx,json,css,scss}"
-        continue-on-error: true
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run ESLint
-        run: |
-          npm run lint || echo "ESLint not configured - skipping"
-        continue-on-error: true
+        run: npm run lint
 
-  type-check:
-    name: TypeScript Type Check
-    runs-on: ubuntu-latest
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: TypeScript Check
-        run: |
-          if [ -f "tsconfig.json" ]; then
-            npx tsc --noEmit
-          else
-            echo "No TypeScript configuration found - skipping type check"
-          fi
-        continue-on-error: true
-
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    needs: [lint-and-format]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Tests
-        run: |
-          npm test || echo "Tests not configured - skipping"
-        continue-on-error: true
-
-      - name: Generate Test Coverage
-        run: |
-          npm run test:coverage || echo "Coverage not configured - skipping"
-        continue-on-error: true
-
-      - name: Upload Coverage
-        if: always()
+      - name: Upload build artifacts
+        if: matrix.node-version == '20.x'
         uses: actions/upload-artifact@v4
         with:
-          name: react-coverage
-          path: coverage/
-          retention-days: 7
-        continue-on-error: true
-
-  build:
-    name: Build Production Assets
-    runs-on: ubuntu-latest
-    needs: [test]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build Assets
-        run: npm run build
-
-      - name: Check Build Size
-        run: |
-          echo "### 📦 Build Size Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          du -sh public/build >> $GITHUB_STEP_SUMMARY || echo "Build directory not found" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: react-build
-          path: |
-            public/build/
-            public/hot
-          retention-days: 7
-
-  security-audit:
-    name: Security Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-
-      - name: Check for outdated packages
-        run: |
-          echo "### 📦 Outdated Packages" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          npm outdated >> $GITHUB_STEP_SUMMARY || true
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-  lighthouse:
-    name: Lighthouse Performance Audit
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build Assets
-        run: npm run build
-
-      - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v11
-        with:
-          urls: |
-            http://localhost:8000
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-        continue-on-error: true
-
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [build, security-audit]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install Dependencies & Build
-        run: |
-          npm ci
-          npm run build
-
-      - name: Deployment Summary
-        run: |
-          echo "### 🚀 Staging Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build, security-audit]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install Dependencies & Build
-        run: |
-          npm ci
-          npm run build
-
-      # Upload to CDN or Static Hosting
-      # - name: Deploy to Vercel/Netlify/S3
-      #   run: |
-      #     # Configure your deployment here
-
-      - name: Deployment Summary
-        run: |
-          echo "### 🚀 Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Deployed At:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          name: build-artifacts
+          path: public/build
+          retention-days: 5
