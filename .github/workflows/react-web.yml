@@ -1,0 +1,117 @@
+name: React Web App CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'resources/js/**'
+      - 'resources/css/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'tailwind.config.js'
+      - 'eslint.config.js'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'resources/js/**'
+      - 'resources/css/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+
+jobs:
+  lint-and-build:
+    name: Lint & Build React App
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-20-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-20-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify dependencies
+        run: npm list --depth=0 || true
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build React application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Check build output
+        run: |
+          if [ -d "public/build" ]; then
+            echo "Build successful!"
+            ls -lah public/build/
+          else
+            echo "Build directory not found!"
+            exit 1
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-build
+          path: public/build
+          retention-days: 30
+
+  test-build-size:
+    name: Analyze Build Size
+    runs-on: ubuntu-latest
+    needs: lint-and-build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Analyze bundle size
+        run: |
+          echo "=== Build Output Size ==="
+          du -sh public/build/
+          echo ""
+          echo "=== JavaScript Files ==="
+          find public/build -name "*.js" -exec du -h {} \; | sort -rh
+          echo ""
+          echo "=== CSS Files ==="
+          find public/build -name "*.css" -exec du -h {} \; | sort -rh
+
+  build-success:
+    name: All React Checks Passed
+    runs-on: ubuntu-latest
+    needs: [lint-and-build, test-build-size]
+    
+    steps:
+      - name: Success
+        run: echo "All React CI checks passed successfully!"

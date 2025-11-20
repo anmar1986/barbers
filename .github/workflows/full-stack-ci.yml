@@ -1,0 +1,24 @@
+name: Full Stack CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  info:
+    name: Pipeline Info
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Information
+        run: |
+          echo "╔════════════════════════════════════════════╗"
+          echo "║        Full Stack CI/CD Pipeline          ║"
+          echo "╠════════════════════════════════════════════╣"
+          echo "║  Individual workflows run automatically:   ║"
+          echo "║  • Laravel Backend CI/CD                   ║"
+          echo "║  • Flutter Mobile App CI/CD                ║"
+          echo "║  • React Web App CI/CD                     ║"
+          echo "║                                            ║"
+          echo "║  They trigger on push/PR to main/develop   ║"
+          echo "║  Check Actions tab for individual status   ║"
+          echo "╚════════════════════════════════════════════╝"

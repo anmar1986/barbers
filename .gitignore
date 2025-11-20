@@ -25,6 +25,13 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# CI/CD - Keep these files committed:
+# .env.example - Template for new environments
+# .env.testing - Testing configuration
+# composer.lock - PHP dependencies (MUST commit)
+# package-lock.json - Node dependencies (MUST commit)
+# frontend/pubspec.lock - Flutter dependencies (MUST commit)
+
 # Docker volumes and data
 mysql-data/
 redis-data/
