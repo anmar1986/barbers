@@ -3,22 +3,8 @@ name: React Web App CI/CD
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'resources/js/**'
-      - 'resources/css/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.js'
-      - 'tailwind.config.js'
-      - 'eslint.config.js'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'resources/js/**'
-      - 'resources/css/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.js'
 
 jobs:
   lint-and-build:

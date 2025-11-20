@@ -3,15 +3,8 @@ name: Flutter Mobile App CI/CD
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'frontend/**'
-      - '!frontend/README.md'
-      - '!frontend/android/fastlane/**'
-      - '!frontend/ios/fastlane/**'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'frontend/**'
 
 jobs:
   analyze-and-test:

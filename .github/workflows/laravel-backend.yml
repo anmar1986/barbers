@@ -3,28 +3,8 @@ name: Laravel Backend CI/CD
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'app/**'
-      - 'config/**'
-      - 'database/**'
-      - 'routes/**'
-      - 'tests/**'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'phpunit.xml'
-      - 'phpstan.neon'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'app/**'
-      - 'config/**'
-      - 'database/**'
-      - 'routes/**'
-      - 'tests/**'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'phpunit.xml'
-      - 'phpstan.neon'
 
 jobs:
   laravel-tests:
