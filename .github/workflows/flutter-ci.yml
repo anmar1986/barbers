@@ -91,6 +91,11 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Setup Test Environment
+        run: |
+          mkdir -p assets/images assets/icons
+          cp .env.example .env || echo "API_BASE_URL=http://localhost:8000/api" > .env
+
       - name: Run Unit Tests
         run: flutter test --coverage
 
