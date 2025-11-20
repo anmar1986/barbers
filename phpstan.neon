@@ -19,7 +19,6 @@ parameters:
         - vendor
         - storage
         - bootstrap/cache
-        - node_modules
 
     # Ignore errors in specific files or patterns
     ignoreErrors:
