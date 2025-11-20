@@ -3,8 +3,8 @@
 namespace App\Modules\Shop\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Shop\Services\OrderService;
 use App\Modules\Shop\Requests\CreateOrderRequest;
+use App\Modules\Shop\Services\OrderService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -27,21 +27,21 @@ class OrderController extends Controller
             $filters = [
                 'status' => $request->status,
                 'payment_status' => $request->payment_status,
-                'per_page' => $request->per_page
+                'per_page' => $request->per_page,
             ];
 
             $orders = $this->orderService->getUserOrders($request->user()->id, $filters);
 
             return response()->json([
                 'success' => true,
-                'data' => $orders
+                'data' => $orders,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching orders',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -57,20 +57,20 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $order
+                'data' => $order,
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found'
+                'message' => 'Order not found',
             ], 404);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching order',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -90,13 +90,13 @@ class OrderController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Order created successfully',
-                'data' => $order
+                'data' => $order,
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -108,7 +108,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, string $orderNumber)
     {
         $request->validate([
-            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled,refunded'
+            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled,refunded',
         ]);
 
         try {
@@ -121,13 +121,13 @@ class OrderController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Order status updated',
-                'data' => $order
+                'data' => $order,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 403);
         }
     }
@@ -144,13 +144,13 @@ class OrderController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Order cancelled successfully',
-                'data' => $order
+                'data' => $order,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -167,35 +167,35 @@ class OrderController extends Controller
             if ($user->user_type !== 'business') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only business users can access this endpoint'
+                    'message' => 'Only business users can access this endpoint',
                 ], 403);
             }
 
             $business = $user->business;
-            if (!$business) {
+            if (! $business) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Business profile not found'
+                    'message' => 'Business profile not found',
                 ], 404);
             }
 
             $filters = [
                 'status' => $request->status,
-                'per_page' => $request->per_page
+                'per_page' => $request->per_page,
             ];
 
             $orders = $this->orderService->getBusinessOrders($business->id, $filters);
 
             return response()->json([
                 'success' => true,
-                'data' => $orders
+                'data' => $orders,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching business orders',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -212,15 +212,15 @@ class OrderController extends Controller
             if ($user->user_type !== 'business') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only business users can access this endpoint'
+                    'message' => 'Only business users can access this endpoint',
                 ], 403);
             }
 
             $business = $user->business;
-            if (!$business) {
+            if (! $business) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Business profile not found'
+                    'message' => 'Business profile not found',
                 ], 404);
             }
 
@@ -228,14 +228,14 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $stats
+                'data' => $stats,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching statistics',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

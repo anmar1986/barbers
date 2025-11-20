@@ -3,8 +3,8 @@
 namespace App\Modules\Business\Models;
 
 use App\Models\User;
-use App\Modules\Videos\Models\Video;
 use App\Modules\Shop\Models\Product;
+use App\Modules\Videos\Models\Video;
 use Database\Factories\BusinessFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -170,8 +170,6 @@ class Business extends Model
 
     /**
      * Check if business is active.
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -180,8 +178,6 @@ class Business extends Model
 
     /**
      * Check if business is verified.
-     *
-     * @return bool
      */
     public function isVerified(): bool
     {

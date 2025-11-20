@@ -19,19 +19,20 @@ class UploadController extends Controller
     public function uploadImage(Request $request): JsonResponse
     {
         // Check if file was uploaded
-        if (!$request->hasFile('file')) {
+        if (! $request->hasFile('file')) {
             return response()->json([
                 'message' => 'No file uploaded',
-                'errors' => ['file' => ['No file was provided']]
+                'errors' => ['file' => ['No file was provided']],
             ], 422);
         }
 
         // Check if file upload was successful
-        if (!$request->file('file')->isValid()) {
+        if (! $request->file('file')->isValid()) {
             $errorCode = $request->file('file')->getError();
+
             return response()->json([
                 'message' => 'File upload failed',
-                'errors' => ['file' => ['File upload error code: ' . $errorCode]]
+                'errors' => ['file' => ['File upload error code: '.$errorCode]],
             ], 422);
         }
 
@@ -45,22 +46,23 @@ class UploadController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Upload validation failed:', $e->errors());
+
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         }
 
         try {
             $options = [];
-            
+
             if ($request->has('resize_width') && $request->has('resize_height')) {
                 $options['resize'] = [
                     $request->input('resize_width'),
-                    $request->input('resize_height')
+                    $request->input('resize_height'),
                 ];
             }
-            
+
             if ($request->input('create_thumbnail') == '1' || $request->input('create_thumbnail') === true || $request->input('create_thumbnail') === 'true') {
                 $options['thumbnail'] = true;
             }
@@ -73,12 +75,12 @@ class UploadController extends Controller
 
             return response()->json([
                 'message' => 'Image uploaded successfully',
-                'data' => $result
+                'data' => $result,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to upload image',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -97,7 +99,7 @@ class UploadController extends Controller
 
         try {
             $options = [];
-            
+
             if ($request->input('create_thumbnail', false)) {
                 $options['thumbnail'] = true;
             }
@@ -110,12 +112,12 @@ class UploadController extends Controller
 
             return response()->json([
                 'message' => 'Images uploaded successfully',
-                'data' => $results
+                'data' => $results,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to upload images',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -138,12 +140,12 @@ class UploadController extends Controller
 
             return response()->json([
                 'message' => 'Video uploaded successfully',
-                'data' => $result
+                'data' => $result,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to upload video',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -162,17 +164,17 @@ class UploadController extends Controller
 
             if ($deleted) {
                 return response()->json([
-                    'message' => 'File deleted successfully'
+                    'message' => 'File deleted successfully',
                 ]);
             }
 
             return response()->json([
-                'message' => 'File not found'
+                'message' => 'File not found',
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete file',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

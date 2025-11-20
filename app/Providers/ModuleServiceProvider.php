@@ -10,8 +10,6 @@ class ModuleServiceProvider extends ServiceProvider
 {
     /**
      * List of modules to load
-     *
-     * @var array
      */
     protected array $modules = [
         'Auth',
@@ -47,7 +45,7 @@ class ModuleServiceProvider extends ServiceProvider
     {
         // Modules without version prefix (Business, Videos, Auth, etc.)
         $modulesWithoutVersion = ['Business', 'Videos', 'Auth', 'User', 'Search', 'Payment', 'Notification'];
-        
+
         foreach ($modulesWithoutVersion as $module) {
             $routePath = app_path("Modules/{$module}/Routes/api.php");
 
@@ -57,9 +55,9 @@ class ModuleServiceProvider extends ServiceProvider
                     ->group($routePath);
             }
         }
-        
+
         // Shop module uses v1 prefix
-        $shopRoutePath = app_path("Modules/Shop/Routes/api.php");
+        $shopRoutePath = app_path('Modules/Shop/Routes/api.php');
         if (File::exists($shopRoutePath)) {
             Route::middleware('api')
                 ->prefix('api')

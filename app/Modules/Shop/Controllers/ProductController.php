@@ -3,9 +3,9 @@
 namespace App\Modules\Shop\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Shop\Services\ProductService;
 use App\Modules\Shop\Requests\CreateProductRequest;
 use App\Modules\Shop\Requests\UpdateProductRequest;
+use App\Modules\Shop\Services\ProductService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -33,21 +33,21 @@ class ProductController extends Controller
                 'search' => $request->search,
                 'sort_by' => $request->sort_by,
                 'sort_order' => $request->sort_order,
-                'per_page' => $request->per_page
+                'per_page' => $request->per_page,
             ];
 
             $products = $this->productService->getAllProducts($filters);
 
             return response()->json([
                 'success' => true,
-                'data' => $products
+                'data' => $products,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching products',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -63,20 +63,20 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $product
+                'data' => $product,
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
             ], 404);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching product',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -94,15 +94,15 @@ class ProductController extends Controller
             if ($user->user_type !== 'business') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only business users can create products'
+                    'message' => 'Only business users can create products',
                 ], 403);
             }
 
             $business = $user->business;
-            if (!$business) {
+            if (! $business) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Please create a business profile first'
+                    'message' => 'Please create a business profile first',
                 ], 400);
             }
 
@@ -114,14 +114,14 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product created successfully',
-                'data' => $product
+                'data' => $product,
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating product',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -142,19 +142,19 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully',
-                'data' => $product
+                'data' => $product,
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
             ], 404);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 403);
         }
     }
@@ -170,19 +170,19 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Product deleted successfully'
+                'message' => 'Product deleted successfully',
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
             ], 404);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 403);
         }
     }
@@ -194,7 +194,7 @@ class ProductController extends Controller
     public function updateStock(Request $request, string $uuid)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:0'
+            'quantity' => 'required|integer|min:0',
         ]);
 
         try {
@@ -207,13 +207,13 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Stock updated successfully',
-                'data' => $product
+                'data' => $product,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 403);
         }
     }
@@ -230,14 +230,14 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $products
+                'data' => $products,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching products',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

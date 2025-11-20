@@ -72,11 +72,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
-        'permissions'          => 'array',
-        'email_verified_at'    => 'datetime',
-        'is_active'            => 'boolean',
-        'last_login_at'        => 'datetime',
-        'date_of_birth'        => 'date',
+        'permissions' => 'array',
+        'email_verified_at' => 'datetime',
+        'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
+        'date_of_birth' => 'date',
     ];
 
     /**
@@ -95,8 +95,6 @@ class User extends Authenticatable
 
     /**
      * Get the user's full name.
-     *
-     * @return string
      */
     public function getNameAttribute(): string
     {
@@ -106,7 +104,7 @@ class User extends Authenticatable
     /**
      * Set the user's name (splits into first and last name).
      *
-     * @param string $value
+     * @param  string  $value
      */
     public function setNameAttribute($value): void
     {
@@ -118,7 +116,7 @@ class User extends Authenticatable
     /**
      * Hash the password before saving.
      *
-     * @param string $value
+     * @param  string  $value
      */
     public function setPasswordAttribute($value): void
     {

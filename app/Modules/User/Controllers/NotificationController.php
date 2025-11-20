@@ -45,7 +45,7 @@ class NotificationController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$notification) {
+        if (! $notification) {
             return response()->json([
                 'success' => false,
                 'message' => 'Notification not found',
@@ -89,7 +89,7 @@ class NotificationController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$notification) {
+        if (! $notification) {
             return response()->json([
                 'success' => false,
                 'message' => 'Notification not found',

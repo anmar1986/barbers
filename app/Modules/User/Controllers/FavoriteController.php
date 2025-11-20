@@ -3,10 +3,10 @@
 namespace App\Modules\User\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\User\Models\Favorite;
 use App\Modules\Business\Models\Business;
-use App\Modules\Videos\Models\Video;
 use App\Modules\Shop\Models\Product;
+use App\Modules\User\Models\Favorite;
+use App\Modules\Videos\Models\Video;
 use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
@@ -59,10 +59,10 @@ class FavoriteController extends Controller
 
         // Check if item exists
         $item = $modelClass::find($request->id);
-        if (!$item) {
+        if (! $item) {
             return response()->json([
                 'success' => false,
-                'message' => ucfirst($request->type) . ' not found',
+                'message' => ucfirst($request->type).' not found',
             ], 404);
         }
 
@@ -102,7 +102,7 @@ class FavoriteController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$favorite) {
+        if (! $favorite) {
             return response()->json([
                 'success' => false,
                 'message' => 'Favorite not found',
@@ -128,7 +128,7 @@ class FavoriteController extends Controller
             'product' => Product::class,
         ];
 
-        if (!isset($modelMap[$type])) {
+        if (! isset($modelMap[$type])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid type',

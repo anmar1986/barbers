@@ -19,6 +19,7 @@ class AdminUserSeeder extends Seeder
 
         if ($existingAdmin) {
             $this->command->info('Admin user already exists!');
+
             return;
         }
 

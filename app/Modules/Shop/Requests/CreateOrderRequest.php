@@ -33,7 +33,7 @@ class CreateOrderRequest extends FormRequest
             'billing_address.postal_code' => 'required_with:billing_address|string|max:20',
             'billing_address.country' => 'required_with:billing_address|string|max:100',
             'shipping_cost' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string|max:500'
+            'notes' => 'nullable|string|max:500',
         ];
     }
 
@@ -47,7 +47,7 @@ class CreateOrderRequest extends FormRequest
             'shipping_address.city.required' => 'City is required',
             'shipping_address.postal_code.required' => 'Postal code is required',
             'shipping_address.country.required' => 'Country is required',
-            'shipping_address.phone.required' => 'Phone number is required'
+            'shipping_address.phone.required' => 'Phone number is required',
         ];
     }
 }

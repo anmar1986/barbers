@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Modules\Shop\Controllers\ProductController;
 use App\Modules\Shop\Controllers\CartController;
 use App\Modules\Shop\Controllers\OrderController;
+use App\Modules\Shop\Controllers\ProductController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------

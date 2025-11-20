@@ -27,14 +27,14 @@ class CartController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $cart
+                'data' => $cart,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching cart',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -47,7 +47,7 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|integer|exists:products,id',
-            'quantity' => 'integer|min:1'
+            'quantity' => 'integer|min:1',
         ]);
 
         try {
@@ -60,13 +60,13 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product added to cart',
-                'data' => $cart
+                'data' => $cart,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -78,7 +78,7 @@ class CartController extends Controller
     public function updateItem(Request $request, string $cartItemId)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         try {
@@ -91,13 +91,13 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cart updated',
-                'data' => $cart
+                'data' => $cart,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -117,13 +117,13 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Item removed from cart',
-                'data' => $cart
+                'data' => $cart,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -140,14 +140,14 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cart cleared',
-                'data' => $cart
+                'data' => $cart,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error clearing cart',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -166,14 +166,14 @@ class CartController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $totals
+                'data' => $totals,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error calculating totals',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

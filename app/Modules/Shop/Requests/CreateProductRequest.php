@@ -28,7 +28,7 @@ class CreateProductRequest extends FormRequest
             'weight' => 'nullable|numeric|min:0',
             'weight_unit' => 'nullable|in:kg,g,lb,oz',
             'images' => 'nullable|array',
-            'images.*' => 'string'
+            'images.*' => 'string',
         ];
     }
 
@@ -39,7 +39,7 @@ class CreateProductRequest extends FormRequest
             'price.required' => 'Product price is required',
             'price.numeric' => 'Price must be a valid number',
             'stock_quantity.integer' => 'Stock quantity must be a number',
-            'sku.unique' => 'SKU already exists'
+            'sku.unique' => 'SKU already exists',
         ];
     }
 }

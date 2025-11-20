@@ -4,13 +4,13 @@ namespace App\Modules\Shop\Services;
 
 use App\Modules\Shop\Models\Order;
 use App\Modules\Shop\Models\OrderItem;
-use App\Modules\Shop\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OrderService
 {
     private $cartService;
+
     private $productService;
 
     public function __construct(CartService $cartService, ProductService $productService)
@@ -37,7 +37,7 @@ class OrderService
             $totals = $this->cartService->calculateTotals($userId, $orderData);
 
             // Generate unique order number
-            $orderNumber = 'ORD-' . strtoupper(Str::random(8)) . '-' . time();
+            $orderNumber = 'ORD-'.strtoupper(Str::random(8)).'-'.time();
 
             // Create order
             $order = Order::create([
@@ -52,7 +52,7 @@ class OrderService
                 'payment_status' => 'pending',
                 'shipping_address' => json_encode($orderData['shipping_address'] ?? []),
                 'billing_address' => json_encode($orderData['billing_address'] ?? $orderData['shipping_address'] ?? []),
-                'notes' => $orderData['notes'] ?? null
+                'notes' => $orderData['notes'] ?? null,
             ]);
 
             // Create order items and reduce stock
@@ -63,7 +63,7 @@ class OrderService
                     'business_id' => $cartItem['product']->business_id,
                     'quantity' => $cartItem['quantity'],
                     'price' => $cartItem['price'],
-                    'total' => $cartItem['subtotal']
+                    'total' => $cartItem['subtotal'],
                 ]);
 
                 // Reduce stock
@@ -95,12 +95,12 @@ class OrderService
             ->where('user_id', $userId);
 
         // Filter by status
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
         // Filter by payment status
-        if (!empty($filters['payment_status'])) {
+        if (! empty($filters['payment_status'])) {
             $query->where('payment_status', $filters['payment_status']);
         }
 
@@ -130,8 +130,8 @@ class OrderService
             ->where('business_id', $businessId);
 
         // Filter by order status
-        if (!empty($filters['status'])) {
-            $query->whereHas('order', function($q) use ($filters) {
+        if (! empty($filters['status'])) {
+            $query->whereHas('order', function ($q) use ($filters) {
                 $q->where('status', $filters['status']);
             });
         }
@@ -154,12 +154,12 @@ class OrderService
 
         // Validate status transition
         $validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
-        if (!in_array($status, $validStatuses)) {
+        if (! in_array($status, $validStatuses)) {
             throw new \Exception('Invalid order status');
         }
 
         // Handle cancellation - restore stock
-        if ($status === 'cancelled' && !in_array($order->status, ['cancelled', 'delivered', 'refunded'])) {
+        if ($status === 'cancelled' && ! in_array($order->status, ['cancelled', 'delivered', 'refunded'])) {
             foreach ($order->items as $item) {
                 $this->productService->restoreStock($item->product_id, $item->quantity);
             }
@@ -173,12 +173,12 @@ class OrderService
     /**
      * Update payment status
      */
-    public function updatePaymentStatus(string $orderNumber, string $paymentStatus, string $transactionId = null)
+    public function updatePaymentStatus(string $orderNumber, string $paymentStatus, ?string $transactionId = null)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
         $validStatuses = ['pending', 'paid', 'failed', 'refunded'];
-        if (!in_array($paymentStatus, $validStatuses)) {
+        if (! in_array($paymentStatus, $validStatuses)) {
             throw new \Exception('Invalid payment status');
         }
 
@@ -223,19 +223,19 @@ class OrderService
         $totalOrders = OrderItem::where('business_id', $businessId)->count();
 
         $totalRevenue = OrderItem::where('business_id', $businessId)
-            ->whereHas('order', function($q) {
+            ->whereHas('order', function ($q) {
                 $q->where('payment_status', 'paid');
             })
             ->sum('total');
 
         $pendingOrders = OrderItem::where('business_id', $businessId)
-            ->whereHas('order', function($q) {
+            ->whereHas('order', function ($q) {
                 $q->where('status', 'pending');
             })
             ->count();
 
         $completedOrders = OrderItem::where('business_id', $businessId)
-            ->whereHas('order', function($q) {
+            ->whereHas('order', function ($q) {
                 $q->where('status', 'delivered');
             })
             ->count();
@@ -244,7 +244,7 @@ class OrderService
             'total_orders' => $totalOrders,
             'total_revenue' => $totalRevenue,
             'pending_orders' => $pendingOrders,
-            'completed_orders' => $completedOrders
+            'completed_orders' => $completedOrders,
         ];
     }
 }

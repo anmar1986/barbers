@@ -28,7 +28,7 @@ class SearchController extends Controller
         if (empty($query)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Search query is required'
+                'message' => 'Search query is required',
             ], 400);
         }
 
@@ -37,7 +37,7 @@ class SearchController extends Controller
         return response()->json([
             'success' => true,
             'query' => $query,
-            'results' => $results
+            'results' => $results,
         ]);
     }
 
@@ -56,7 +56,7 @@ class SearchController extends Controller
             'latitude' => $request->input('lat'),
             'longitude' => $request->input('lng'),
             'radius' => $request->input('radius'), // in km
-            'sort_by' => $request->input('sort_by', 'relevance')
+            'sort_by' => $request->input('sort_by', 'relevance'),
         ];
 
         $results = $this->searchService->searchBusinesses($query, $limit, $filters);
@@ -66,7 +66,7 @@ class SearchController extends Controller
             'query' => $query,
             'filters' => $filters,
             'count' => $results->count(),
-            'data' => $results
+            'data' => $results,
         ]);
     }
 
@@ -84,7 +84,7 @@ class SearchController extends Controller
             'min_views' => $request->input('min_views'),
             'min_duration' => $request->input('min_duration'),
             'max_duration' => $request->input('max_duration'),
-            'sort_by' => $request->input('sort_by', 'relevance')
+            'sort_by' => $request->input('sort_by', 'relevance'),
         ];
 
         $results = $this->searchService->searchVideos($query, $limit, $filters);
@@ -94,7 +94,7 @@ class SearchController extends Controller
             'query' => $query,
             'filters' => $filters,
             'count' => $results->count(),
-            'data' => $results
+            'data' => $results,
         ]);
     }
 
@@ -113,7 +113,7 @@ class SearchController extends Controller
             'max_price' => $request->input('max_price'),
             'in_stock' => $request->input('in_stock'),
             'min_rating' => $request->input('min_rating'),
-            'sort_by' => $request->input('sort_by', 'relevance')
+            'sort_by' => $request->input('sort_by', 'relevance'),
         ];
 
         $results = $this->searchService->searchProducts($query, $limit, $filters);
@@ -123,7 +123,7 @@ class SearchController extends Controller
             'query' => $query,
             'filters' => $filters,
             'count' => $results->count(),
-            'data' => $results
+            'data' => $results,
         ]);
     }
 
@@ -140,7 +140,7 @@ class SearchController extends Controller
             'success' => true,
             'hashtag' => $hashtag,
             'count' => $results->count(),
-            'data' => $results
+            'data' => $results,
         ]);
     }
 
@@ -156,7 +156,7 @@ class SearchController extends Controller
         if (strlen($query) < 2) {
             return response()->json([
                 'success' => false,
-                'message' => 'Query must be at least 2 characters'
+                'message' => 'Query must be at least 2 characters',
             ], 400);
         }
 
@@ -165,7 +165,7 @@ class SearchController extends Controller
         return response()->json([
             'success' => true,
             'query' => $query,
-            'suggestions' => $suggestions
+            'suggestions' => $suggestions,
         ]);
     }
 
@@ -180,7 +180,7 @@ class SearchController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $trending
+            'data' => $trending,
         ]);
     }
 }

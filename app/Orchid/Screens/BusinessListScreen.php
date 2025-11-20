@@ -3,7 +3,6 @@
 namespace App\Orchid\Screens;
 
 use App\Modules\Business\Models\Business;
-use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -26,8 +25,6 @@ class BusinessListScreen extends Screen
 
     /**
      * The name of the screen displayed in the header.
-     *
-     * @return string|null
      */
     public function name(): ?string
     {
@@ -96,7 +93,7 @@ class BusinessListScreen extends Screen
 
                 TD::make('average_rating', 'Rating')
                     ->render(fn (Business $business) => $business->average_rating
-                        ? round($business->average_rating, 1) . ' ⭐'
+                        ? round($business->average_rating, 1).' ⭐'
                         : 'No ratings'),
 
                 TD::make('created_at', 'Created')

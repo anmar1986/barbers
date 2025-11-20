@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Modules\User\Models\Notification;
 use App\Models\User;
+use App\Modules\User\Models\Notification;
 
 class NotificationService
 {
@@ -232,8 +232,10 @@ class NotificationService
         $notification = Notification::find($notificationId);
         if ($notification) {
             $notification->markAsRead();
+
             return true;
         }
+
         return false;
     }
 

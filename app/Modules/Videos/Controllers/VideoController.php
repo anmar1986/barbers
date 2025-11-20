@@ -30,7 +30,7 @@ class VideoController extends Controller
             'business_type',
             'hashtag',
             'cursor',
-            'order_by'
+            'order_by',
         ]);
 
         $limit = $request->input('limit', 20);
@@ -64,7 +64,7 @@ class VideoController extends Controller
     {
         $query = $request->input('q');
 
-        if (!$query) {
+        if (! $query) {
             return response()->json([
                 'success' => false,
                 'message' => 'Search query is required',
@@ -205,7 +205,7 @@ class VideoController extends Controller
         $video = Video::where('uuid', $uuid)->firstOrFail();
 
         // Check if not liked
-        if (!$this->videoService->isLiked($video, $request->user()->id)) {
+        if (! $this->videoService->isLiked($video, $request->user()->id)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Not liked this video',

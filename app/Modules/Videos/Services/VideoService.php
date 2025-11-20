@@ -2,11 +2,11 @@
 
 namespace App\Modules\Videos\Services;
 
+use App\Jobs\ProcessVideo;
 use App\Modules\Videos\Models\Video;
 use App\Modules\Videos\Models\VideoComment;
 use App\Modules\Videos\Models\VideoHashtag;
 use App\Modules\Videos\Models\VideoLike;
-use App\Jobs\ProcessVideo;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -55,7 +55,7 @@ class VideoService
         $video = Video::with([
             'business.user',
             'hashtags',
-            'comments.user'
+            'comments.user',
         ])->where('uuid', $uuid)->firstOrFail();
 
         // Increment view count

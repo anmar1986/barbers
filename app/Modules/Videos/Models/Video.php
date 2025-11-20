@@ -2,8 +2,8 @@
 
 namespace App\Modules\Videos\Models;
 
-use App\Modules\Business\Models\Business;
 use App\Models\User;
+use App\Modules\Business\Models\Business;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -120,9 +120,6 @@ class Video extends Model
 
     /**
      * Check if user has liked this video.
-     *
-     * @param int $userId
-     * @return bool
      */
     public function isLikedBy(int $userId): bool
     {
@@ -139,8 +136,6 @@ class Video extends Model
 
     /**
      * Check if video is published.
-     *
-     * @return bool
      */
     public function isPublished(): bool
     {
@@ -149,8 +144,6 @@ class Video extends Model
 
     /**
      * Check if video is still processing.
-     *
-     * @return bool
      */
     public function isProcessing(): bool
     {

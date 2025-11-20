@@ -3,8 +3,8 @@
 namespace App\Modules\Business\Services;
 
 use App\Modules\Business\Models\Business;
-use App\Modules\Business\Models\Service;
 use App\Modules\Business\Models\BusinessHour;
+use App\Modules\Business\Models\Service;
 use Illuminate\Support\Facades\DB;
 
 class BusinessManagementService
@@ -57,7 +57,7 @@ class BusinessManagementService
     public function getServices(int $userId): array
     {
         $business = Business::where('user_id', $userId)->firstOrFail();
-        
+
         return $business->services()
             ->orderBy('created_at', 'desc')
             ->get()
@@ -87,14 +87,14 @@ class BusinessManagementService
         \Log::info('BusinessManagementService::updateService called', [
             'user_id' => $userId,
             'service_uuid' => $serviceUuid,
-            'data' => $data
+            'data' => $data,
         ]);
 
         $business = Business::where('user_id', $userId)->firstOrFail();
 
         \Log::info('Business found:', [
             'business_id' => $business->id,
-            'business_name' => $business->business_name
+            'business_name' => $business->business_name,
         ]);
 
         $service = Service::where('business_id', $business->id)
@@ -116,7 +116,7 @@ class BusinessManagementService
     public function deleteService(int $userId, string $serviceUuid): bool
     {
         $business = Business::where('user_id', $userId)->firstOrFail();
-        
+
         $service = Service::where('business_id', $business->id)
             ->where('uuid', $serviceUuid)
             ->firstOrFail();
@@ -182,7 +182,7 @@ class BusinessManagementService
         \Log::info('Getting videos for business', [
             'user_id' => $userId,
             'business_id' => $business->id,
-            'business_name' => $business->business_name
+            'business_name' => $business->business_name,
         ]);
 
         $videos = $business->videos()
@@ -192,7 +192,7 @@ class BusinessManagementService
 
         \Log::info('Videos found:', [
             'count' => count($videos),
-            'videos' => $videos
+            'videos' => $videos,
         ]);
 
         return $videos;
@@ -214,7 +214,7 @@ class BusinessManagementService
         \Log::info('Deleting business', [
             'business_id' => $business->id,
             'business_name' => $business->business_name,
-            'user_id' => $business->user_id
+            'user_id' => $business->user_id,
         ]);
 
         // Soft delete the business
@@ -223,7 +223,7 @@ class BusinessManagementService
 
         \Log::info('Business deleted', [
             'success' => $result,
-            'business_id' => $business->id
+            'business_id' => $business->id,
         ]);
 
         return $result;

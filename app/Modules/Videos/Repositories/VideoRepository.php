@@ -18,33 +18,33 @@ class VideoRepository
         $query = Video::query()
             ->with([
                 'business:id,uuid,business_name,business_type,logo,is_verified',
-                'hashtags'
+                'hashtags',
             ])
             ->where('status', 'published');
 
         // Filter by business type
-        if (!empty($filters['business_type'])) {
+        if (! empty($filters['business_type'])) {
             $query->whereHas('business', function ($q) use ($filters) {
                 $q->where('business_type', $filters['business_type']);
             });
         }
 
         // Filter by hashtag
-        if (!empty($filters['hashtag'])) {
+        if (! empty($filters['hashtag'])) {
             $query->whereHas('hashtags', function ($q) use ($filters) {
                 $q->where('hashtag', $filters['hashtag']);
             });
         }
 
         // Cursor-based pagination
-        if (!empty($filters['cursor'])) {
+        if (! empty($filters['cursor'])) {
             $query->where('id', '<', $filters['cursor']);
         }
 
         // Order by
         $orderBy = $filters['order_by'] ?? 'created_at';
         $allowedOrders = ['created_at', 'view_count', 'like_count'];
-        
+
         if (in_array($orderBy, $allowedOrders)) {
             $query->orderBy($orderBy, 'desc');
         }
@@ -60,7 +60,7 @@ class VideoRepository
         return Video::query()
             ->with([
                 'business:id,uuid,business_name,business_type,logo,is_verified',
-                'hashtags'
+                'hashtags',
             ])
             ->where('status', 'published')
             ->where('created_at', '>=', now()->subDays(7))
@@ -78,15 +78,15 @@ class VideoRepository
         return Video::query()
             ->with([
                 'business:id,uuid,business_name,business_type,logo,is_verified',
-                'hashtags'
+                'hashtags',
             ])
             ->where('status', 'published')
             ->where(function ($q) use ($query) {
-                $q->where('title', 'like', '%' . $query . '%')
-                  ->orWhere('description', 'like', '%' . $query . '%')
-                  ->orWhereHas('hashtags', function ($hq) use ($query) {
-                      $hq->where('hashtag', 'like', '%' . $query . '%');
-                  });
+                $q->where('title', 'like', '%'.$query.'%')
+                    ->orWhere('description', 'like', '%'.$query.'%')
+                    ->orWhereHas('hashtags', function ($hq) use ($query) {
+                        $hq->where('hashtag', 'like', '%'.$query.'%');
+                    });
             })
             ->orderBy('view_count', 'desc')
             ->limit($limit)
@@ -104,10 +104,10 @@ class VideoRepository
             'hashtags',
             'comments' => function ($q) {
                 $q->with('user:id,first_name,last_name,profile_picture')
-                  ->whereNull('parent_id')
-                  ->orderBy('created_at', 'desc')
-                  ->limit(20);
-            }
+                    ->whereNull('parent_id')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(20);
+            },
         ])->where('uuid', $uuid)->first();
     }
 
@@ -134,8 +134,8 @@ class VideoRepository
                 'user:id,first_name,last_name,profile_picture',
                 'replies' => function ($q) {
                     $q->with('user:id,first_name,last_name,profile_picture')
-                      ->orderBy('created_at', 'asc');
-                }
+                        ->orderBy('created_at', 'asc');
+                },
             ])
             ->where('video_id', $video->id)
             ->whereNull('parent_id')
@@ -151,7 +151,7 @@ class VideoRepository
         return Video::query()
             ->with([
                 'business:id,uuid,business_name,business_type,logo,is_verified',
-                'hashtags'
+                'hashtags',
             ])
             ->where('status', 'published')
             ->whereHas('hashtags', function ($q) use ($hashtag) {

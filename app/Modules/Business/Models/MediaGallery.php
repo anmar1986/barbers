@@ -44,8 +44,6 @@ class MediaGallery extends Model
 
     /**
      * Check if media is an image.
-     *
-     * @return bool
      */
     public function isImage(): bool
     {
@@ -54,8 +52,6 @@ class MediaGallery extends Model
 
     /**
      * Check if media is a video.
-     *
-     * @return bool
      */
     public function isVideo(): bool
     {

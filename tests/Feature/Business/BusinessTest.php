@@ -2,11 +2,10 @@
 
 namespace Tests\Feature\Business;
 
-use Tests\TestCase;
 use App\Models\User;
 use App\Modules\Business\Models\Business;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
 
 class BusinessTest extends TestCase
 {
@@ -589,7 +588,7 @@ class BusinessTest extends TestCase
 
         $data = $response->json('data.data');
         foreach ($data as $business) {
-            $this->assertTrue((bool)$business['is_verified']);
+            $this->assertTrue((bool) $business['is_verified']);
         }
     }
 }

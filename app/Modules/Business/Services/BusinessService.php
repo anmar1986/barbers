@@ -7,9 +7,9 @@ use App\Modules\Business\Models\BusinessHours;
 use App\Modules\Business\Models\Review;
 use App\Modules\Business\Models\Service;
 use App\Modules\Business\Repositories\BusinessRepository;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class BusinessService
 {
@@ -31,8 +31,8 @@ class BusinessService
     public function getBusinessByUuid(string $uuid): ?Business
     {
         $business = $this->businessRepository->findByUuid($uuid);
-        
-        if (!$business) {
+
+        if (! $business) {
             return null;
         }
 

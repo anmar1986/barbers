@@ -44,8 +44,9 @@ class ProcessVideo implements ShouldQueue
 
         $video = Video::find($this->videoId);
 
-        if (!$video) {
+        if (! $video) {
             Log::error('Video not found for processing', ['video_id' => $this->videoId]);
+
             return;
         }
 
@@ -71,7 +72,7 @@ class ProcessVideo implements ShouldQueue
     {
         Log::error('ProcessVideo job failed permanently', [
             'video_id' => $this->videoId,
-            'error' => $exception->getMessage()
+            'error' => $exception->getMessage(),
         ]);
 
         $video = Video::find($this->videoId);

@@ -3,8 +3,8 @@
 namespace App\Modules\Search\Services;
 
 use App\Modules\Business\Models\Business;
-use App\Modules\Videos\Models\Video;
 use App\Modules\Shop\Models\Product;
+use App\Modules\Videos\Models\Video;
 use Illuminate\Support\Facades\DB;
 
 class SearchService
@@ -17,18 +17,18 @@ class SearchService
         $results = [
             'businesses' => [],
             'videos' => [],
-            'products' => []
+            'products' => [],
         ];
 
-        if (!$type || $type === 'businesses') {
+        if (! $type || $type === 'businesses') {
             $results['businesses'] = $this->searchBusinesses($query, $limit);
         }
 
-        if (!$type || $type === 'videos') {
+        if (! $type || $type === 'videos') {
             $results['videos'] = $this->searchVideos($query, $limit);
         }
 
-        if (!$type || $type === 'products') {
+        if (! $type || $type === 'products') {
             $results['products'] = $this->searchProducts($query, $limit);
         }
 
@@ -42,10 +42,10 @@ class SearchService
     {
         $searchQuery = Business::query()
             ->where('status', 'active')
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('business_name', 'LIKE', "%{$query}%")
-                  ->orWhere('description', 'LIKE', "%{$query}%")
-                  ->orWhere('address', 'LIKE', "%{$query}%");
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhere('address', 'LIKE', "%{$query}%");
             });
 
         // Apply filters
@@ -64,9 +64,9 @@ class SearchService
             $radius = $filters['radius']; // in km
 
             $searchQuery->whereRaw(
-                "( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) *
+                '( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) *
                 cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) *
-                sin( radians( latitude ) ) ) ) <= ?",
+                sin( radians( latitude ) ) ) ) <= ?',
                 [$lat, $lng, $lat, $radius]
             );
         }
@@ -85,7 +85,7 @@ class SearchService
                 break;
             default:
                 $searchQuery->orderByDesc('is_verified')
-                           ->orderByDesc('average_rating');
+                    ->orderByDesc('average_rating');
         }
 
         return $searchQuery->limit($limit)->get();
@@ -99,18 +99,18 @@ class SearchService
         $searchQuery = Video::query()
             ->where('status', 'published')
             ->where('is_published', true)
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('title', 'LIKE', "%{$query}%")
-                  ->orWhere('description', 'LIKE', "%{$query}%")
-                  ->orWhereHas('hashtags', function($hashQuery) use ($query) {
-                      $hashQuery->where('hashtag', 'LIKE', "%{$query}%");
-                  });
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhereHas('hashtags', function ($hashQuery) use ($query) {
+                        $hashQuery->where('hashtag', 'LIKE', "%{$query}%");
+                    });
             })
             ->with(['business', 'hashtags']);
 
         // Apply filters
         if (isset($filters['business_type'])) {
-            $searchQuery->whereHas('business', function($q) use ($filters) {
+            $searchQuery->whereHas('business', function ($q) use ($filters) {
                 $q->where('business_type', $filters['business_type']);
             });
         }
@@ -142,7 +142,7 @@ class SearchService
                 break;
             default:
                 $searchQuery->orderByDesc('like_count')
-                           ->orderByDesc('view_count');
+                    ->orderByDesc('view_count');
         }
 
         return $searchQuery->limit($limit)->get();
@@ -155,10 +155,10 @@ class SearchService
     {
         $searchQuery = Product::query()
             ->where('is_available', true)
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
-                  ->orWhere('description', 'LIKE', "%{$query}%")
-                  ->orWhere('sku', 'LIKE', "%{$query}%");
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhere('sku', 'LIKE', "%{$query}%");
             })
             ->with(['business', 'images', 'category']);
 
@@ -203,7 +203,7 @@ class SearchService
                 break;
             default:
                 $searchQuery->orderByDesc('rating')
-                           ->orderByDesc('view_count');
+                    ->orderByDesc('view_count');
         }
 
         return $searchQuery->limit($limit)->get();
@@ -217,7 +217,7 @@ class SearchService
         return Video::query()
             ->where('status', 'published')
             ->where('is_published', true)
-            ->whereHas('hashtags', function($q) use ($hashtag) {
+            ->whereHas('hashtags', function ($q) use ($hashtag) {
                 $q->where('hashtag', $hashtag);
             })
             ->with(['business', 'hashtags'])
@@ -259,7 +259,7 @@ class SearchService
         return [
             'businesses' => $businesses,
             'products' => $products,
-            'hashtags' => $hashtags
+            'hashtags' => $hashtags,
         ];
     }
 

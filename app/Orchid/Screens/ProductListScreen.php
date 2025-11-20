@@ -25,8 +25,6 @@ class ProductListScreen extends Screen
 
     /**
      * The name of the screen displayed in the header.
-     *
-     * @return string|null
      */
     public function name(): ?string
     {
@@ -79,7 +77,7 @@ class ProductListScreen extends Screen
 
                 TD::make('price', 'Price')
                     ->sort()
-                    ->render(fn (Product $product) => '$' . number_format($product->price, 2)),
+                    ->render(fn (Product $product) => '$'.number_format($product->price, 2)),
 
                 TD::make('stock_quantity', 'Stock')
                     ->sort()

@@ -2,20 +2,22 @@
 
 namespace Tests\Feature\Videos;
 
-use Tests\TestCase;
 use App\Models\User;
 use App\Modules\Business\Models\Business;
 use App\Modules\Videos\Models\Video;
-use App\Modules\Videos\Models\VideoLike;
 use App\Modules\Videos\Models\VideoComment;
+use App\Modules\Videos\Models\VideoLike;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class VideoLikeCommentTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Business $business;
+
     private Video $video;
 
     protected function setUp(): void

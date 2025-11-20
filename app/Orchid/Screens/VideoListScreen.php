@@ -25,8 +25,6 @@ class VideoListScreen extends Screen
 
     /**
      * The name of the screen displayed in the header.
-     *
-     * @return string|null
      */
     public function name(): ?string
     {
@@ -86,11 +84,11 @@ class VideoListScreen extends Screen
 
                 TD::make('status', 'Status')
                     ->sort()
-                    ->render(fn (Video $video) => match($video->status) {
+                    ->render(fn (Video $video) => match ($video->status) {
                         'published' => '<span class="badge bg-success">Published</span>',
                         'processing' => '<span class="badge bg-info">Processing</span>',
                         'draft' => '<span class="badge bg-warning">Draft</span>',
-                        default => '<span class="badge bg-secondary">' . ucfirst($video->status) . '</span>',
+                        default => '<span class="badge bg-secondary">'.ucfirst($video->status).'</span>',
                     }),
 
                 TD::make('created_at', 'Created')

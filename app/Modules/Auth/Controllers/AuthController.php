@@ -3,10 +3,10 @@
 namespace App\Modules\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Auth\Requests\ChangePasswordRequest;
 use App\Modules\Auth\Requests\LoginRequest;
 use App\Modules\Auth\Requests\RegisterRequest;
 use App\Modules\Auth\Requests\UpdateProfileRequest;
-use App\Modules\Auth\Requests\ChangePasswordRequest;
 use App\Modules\Auth\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,9 +19,6 @@ class AuthController extends Controller
 
     /**
      * Register a new user.
-     *
-     * @param RegisterRequest $request
-     * @return JsonResponse
      */
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -39,9 +36,6 @@ class AuthController extends Controller
 
     /**
      * Login a user.
-     *
-     * @param LoginRequest $request
-     * @return JsonResponse
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -59,9 +53,6 @@ class AuthController extends Controller
 
     /**
      * Logout the authenticated user.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function logout(Request $request): JsonResponse
     {
@@ -75,9 +66,6 @@ class AuthController extends Controller
 
     /**
      * Logout from all devices.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function logoutAll(Request $request): JsonResponse
     {
@@ -91,9 +79,6 @@ class AuthController extends Controller
 
     /**
      * Get authenticated user profile.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function profile(Request $request): JsonResponse
     {
@@ -107,9 +92,6 @@ class AuthController extends Controller
 
     /**
      * Update authenticated user profile.
-     *
-     * @param UpdateProfileRequest $request
-     * @return JsonResponse
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
@@ -124,9 +106,6 @@ class AuthController extends Controller
 
     /**
      * Change user password.
-     *
-     * @param ChangePasswordRequest $request
-     * @return JsonResponse
      */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {

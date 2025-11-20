@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Videos;
 
-use Tests\TestCase;
 use App\Models\User;
 use App\Modules\Business\Models\Business;
 use App\Modules\Videos\Models\Video;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class OptionalAuthTest extends TestCase
 {

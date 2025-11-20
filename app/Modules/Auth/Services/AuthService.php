@@ -10,9 +10,6 @@ class AuthService
 {
     /**
      * Register a new user.
-     *
-     * @param array $data
-     * @return array
      */
     public function register(array $data): array
     {
@@ -38,21 +35,19 @@ class AuthService
     /**
      * Login a user.
      *
-     * @param array $credentials
-     * @return array
      * @throws ValidationException
      */
     public function login(array $credentials): array
     {
         $user = User::where('email', $credentials['email'])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             throw ValidationException::withMessages([
                 'email' => ['Your account has been deactivated.'],
             ]);
@@ -75,9 +70,6 @@ class AuthService
 
     /**
      * Logout the user (revoke current token).
-     *
-     * @param User $user
-     * @return bool
      */
     public function logout(User $user): bool
     {
@@ -89,9 +81,6 @@ class AuthService
 
     /**
      * Logout from all devices (revoke all tokens).
-     *
-     * @param User $user
-     * @return bool
      */
     public function logoutAll(User $user): bool
     {
@@ -103,9 +92,6 @@ class AuthService
 
     /**
      * Get authenticated user profile.
-     *
-     * @param User $user
-     * @return User
      */
     public function getProfile(User $user): User
     {
@@ -114,10 +100,6 @@ class AuthService
 
     /**
      * Update user profile.
-     *
-     * @param User $user
-     * @param array $data
-     * @return User
      */
     public function updateProfile(User $user, array $data): User
     {
@@ -129,15 +111,11 @@ class AuthService
     /**
      * Change user password.
      *
-     * @param User $user
-     * @param string $currentPassword
-     * @param string $newPassword
-     * @return bool
      * @throws ValidationException
      */
     public function changePassword(User $user, string $currentPassword, string $newPassword): bool
     {
-        if (!Hash::check($currentPassword, $user->password)) {
+        if (! Hash::check($currentPassword, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['The current password is incorrect.'],
             ]);

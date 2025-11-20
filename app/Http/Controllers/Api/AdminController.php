@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Business\Models\Business;
-use App\Modules\Videos\Models\Video;
 use App\Modules\Shop\Models\Product;
+use App\Modules\Videos\Models\Video;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -69,7 +69,7 @@ class AdminController extends Controller
         if ($request->user()->user_type !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized. Admin access required.'
+                'message' => 'Unauthorized. Admin access required.',
             ], 403);
         }
 

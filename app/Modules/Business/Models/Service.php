@@ -20,6 +20,7 @@ class Service extends Model
             }
         });
     }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -97,22 +98,18 @@ class Service extends Model
 
     /**
      * Get formatted price.
-     *
-     * @return string
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price, 2);
+        return '$'.number_format($this->price, 2);
     }
 
     /**
      * Get duration in hours and minutes.
-     *
-     * @return string
      */
     public function getFormattedDurationAttribute(): string
     {
-        if (!$this->duration_minutes) {
+        if (! $this->duration_minutes) {
             return 'N/A';
         }
 

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Modules\User\Controllers\FavoriteController;
 use App\Modules\User\Controllers\NotificationController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Favorites Routes

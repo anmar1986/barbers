@@ -21,22 +21,22 @@ class BusinessManagementController extends Controller
         try {
             $business = $this->businessManagementService->getOwnerBusiness($request->user()->id);
 
-            if (!$business) {
+            if (! $business) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No business found for this user'
+                    'message' => 'No business found for this user',
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'data' => $business
+                'data' => $business,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch business',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -72,12 +72,12 @@ class BusinessManagementController extends Controller
 
             return response()->json([
                 'message' => 'Business updated successfully',
-                'data' => $business
+                'data' => $business,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update business',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -91,12 +91,12 @@ class BusinessManagementController extends Controller
             $stats = $this->businessManagementService->getBusinessStatistics($request->user()->id);
 
             return response()->json([
-                'data' => $stats
+                'data' => $stats,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch statistics',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -110,12 +110,12 @@ class BusinessManagementController extends Controller
             $services = $this->businessManagementService->getServices($request->user()->id);
 
             return response()->json([
-                'data' => $services
+                'data' => $services,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch services',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -141,12 +141,12 @@ class BusinessManagementController extends Controller
 
             return response()->json([
                 'message' => 'Service created successfully',
-                'data' => $service
+                'data' => $service,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create service',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -158,7 +158,7 @@ class BusinessManagementController extends Controller
     {
         \Log::info('Service update request:', [
             'uuid' => $uuid,
-            'data' => $request->all()
+            'data' => $request->all(),
         ]);
 
         try {
@@ -182,24 +182,26 @@ class BusinessManagementController extends Controller
 
             return response()->json([
                 'message' => 'Service updated successfully',
-                'data' => $service
+                'data' => $service,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Service update validation failed:', [
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ]);
+
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             \Log::error('Service update failed:', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'message' => 'Failed to update service',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -213,12 +215,12 @@ class BusinessManagementController extends Controller
             $this->businessManagementService->deleteService($request->user()->id, $uuid);
 
             return response()->json([
-                'message' => 'Service deleted successfully'
+                'message' => 'Service deleted successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete service',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -232,12 +234,12 @@ class BusinessManagementController extends Controller
             $hours = $this->businessManagementService->getBusinessHours($request->user()->id);
 
             return response()->json([
-                'data' => $hours
+                'data' => $hours,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch business hours',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -265,16 +267,17 @@ class BusinessManagementController extends Controller
 
             return response()->json([
                 'message' => 'Business hours updated successfully',
-                'data' => $hours
+                'data' => $hours,
             ]);
         } catch (\Exception $e) {
             \Log::error('Business hours update failed:', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'message' => 'Failed to update business hours',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -289,13 +292,13 @@ class BusinessManagementController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $videos
+                'data' => $videos,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch videos',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -308,10 +311,10 @@ class BusinessManagementController extends Controller
         try {
             $business = $this->businessManagementService->getOwnerBusiness($request->user()->id);
 
-            if (!$business) {
+            if (! $business) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No business found for this user'
+                    'message' => 'No business found for this user',
                 ], 404);
             }
 
@@ -328,17 +331,18 @@ class BusinessManagementController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Business deleted successfully'
+                'message' => 'Business deleted successfully',
             ]);
         } catch (\Exception $e) {
             \Log::error('Business deletion failed:', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete business',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

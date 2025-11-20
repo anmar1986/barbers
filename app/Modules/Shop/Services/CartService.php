@@ -34,7 +34,7 @@ class CartService
                     'product' => $product,
                     'quantity' => $item['quantity'],
                     'price' => $product->price,
-                    'subtotal' => $itemTotal
+                    'subtotal' => $itemTotal,
                 ];
                 $total += $itemTotal;
             }
@@ -43,7 +43,7 @@ class CartService
         return [
             'items' => $enrichedCart,
             'total' => $total,
-            'item_count' => count($enrichedCart)
+            'item_count' => count($enrichedCart),
         ];
     }
 
@@ -55,7 +55,7 @@ class CartService
         $product = Product::findOrFail($productId);
 
         // Check availability
-        if (!$product->is_available) {
+        if (! $product->is_available) {
             throw new \Exception('Product is not available');
         }
 
@@ -86,13 +86,13 @@ class CartService
         }
 
         // Add new item if not found
-        if (!$found) {
+        if (! $found) {
             $cart[] = [
                 'id' => uniqid('cart_'),
                 'product_id' => $productId,
                 'quantity' => $quantity,
                 'added_at' => now()->toDateTimeString(),
-                'updated_at' => now()->toDateTimeString()
+                'updated_at' => now()->toDateTimeString(),
             ];
         }
 
@@ -131,7 +131,7 @@ class CartService
             }
         }
 
-        if (!$updated) {
+        if (! $updated) {
             throw new \Exception('Cart item not found');
         }
 
@@ -148,7 +148,7 @@ class CartService
         $cartKey = $this->getCartKey($userId);
         $cart = Cache::get($cartKey, []);
 
-        $cart = array_filter($cart, function($item) use ($cartItemId) {
+        $cart = array_filter($cart, function ($item) use ($cartItemId) {
             return $item['id'] !== $cartItemId;
         });
 
@@ -170,7 +170,7 @@ class CartService
         return [
             'items' => [],
             'total' => 0,
-            'item_count' => 0
+            'item_count' => 0,
         ];
     }
 
@@ -189,7 +189,7 @@ class CartService
         foreach ($cart['items'] as $item) {
             $product = $item['product'];
 
-            if (!$product->is_available) {
+            if (! $product->is_available) {
                 throw new \Exception("Product '{$product->name}' is no longer available");
             }
 
@@ -223,7 +223,7 @@ class CartService
             'subtotal' => round($subtotal, 2),
             'tax' => round($tax, 2),
             'shipping' => round($shipping, 2),
-            'total' => round($total, 2)
+            'total' => round($total, 2),
         ];
     }
 }

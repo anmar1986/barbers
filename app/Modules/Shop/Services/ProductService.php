@@ -4,9 +4,9 @@ namespace App\Modules\Shop\Services;
 
 use App\Modules\Shop\Models\Product;
 use App\Modules\Shop\Models\ProductImage;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductService
 {
@@ -19,34 +19,34 @@ class ProductService
             ->where('is_available', true);
 
         // Filter by business
-        if (!empty($filters['business_id'])) {
+        if (! empty($filters['business_id'])) {
             $query->where('business_id', $filters['business_id']);
         }
 
         // Filter by category
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
         }
 
         // Filter by price range
-        if (!empty($filters['min_price'])) {
+        if (! empty($filters['min_price'])) {
             $query->where('price', '>=', $filters['min_price']);
         }
-        if (!empty($filters['max_price'])) {
+        if (! empty($filters['max_price'])) {
             $query->where('price', '<=', $filters['max_price']);
         }
 
         // Filter by stock availability
-        if (!empty($filters['in_stock'])) {
+        if (! empty($filters['in_stock'])) {
             $query->where('stock_quantity', '>', 0);
         }
 
         // Search by name or description
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
+                    ->orWhere('description', 'LIKE', "%{$search}%");
             });
         }
 
@@ -98,25 +98,26 @@ class ProductService
         try {
             // Generate UUID and slug
             $data['uuid'] = (string) Str::uuid();
-            $data['slug'] = Str::slug($data['name']) . '-' . substr($data['uuid'], 0, 8);
+            $data['slug'] = Str::slug($data['name']).'-'.substr($data['uuid'], 0, 8);
             $data['business_id'] = $businessId;
 
             // Create product
             $product = Product::create($data);
 
             // Handle product images if provided
-            if (!empty($data['images'])) {
+            if (! empty($data['images'])) {
                 foreach ($data['images'] as $index => $imageUrl) {
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_url' => $imageUrl,
                         'display_order' => $index,
-                        'is_primary' => $index === 0
+                        'is_primary' => $index === 0,
                     ]);
                 }
             }
 
             DB::commit();
+
             return $product->load('images', 'business', 'category');
 
         } catch (\Exception $e) {
@@ -140,8 +141,8 @@ class ProductService
             }
 
             // Update slug if name changed
-            if (!empty($data['name']) && $data['name'] !== $product->name) {
-                $data['slug'] = Str::slug($data['name']) . '-' . substr($product->uuid, 0, 8);
+            if (! empty($data['name']) && $data['name'] !== $product->name) {
+                $data['slug'] = Str::slug($data['name']).'-'.substr($product->uuid, 0, 8);
             }
 
             $product->update($data);
@@ -149,7 +150,7 @@ class ProductService
             // Handle image updates if provided
             if (isset($data['images'])) {
                 // Delete old images if replacing
-                if (!empty($data['replace_images'])) {
+                if (! empty($data['replace_images'])) {
                     foreach ($product->images as $image) {
                         Storage::disk('public')->delete($image->image_url);
                         $image->delete();
@@ -162,12 +163,13 @@ class ProductService
                         'product_id' => $product->id,
                         'image_url' => $imageUrl,
                         'display_order' => $index,
-                        'is_primary' => $index === 0 && empty($product->images)
+                        'is_primary' => $index === 0 && empty($product->images),
                     ]);
                 }
             }
 
             DB::commit();
+
             return $product->fresh(['images', 'business', 'category']);
 
         } catch (\Exception $e) {
@@ -199,6 +201,7 @@ class ProductService
             $product->delete();
 
             DB::commit();
+
             return true;
 
         } catch (\Exception $e) {
@@ -220,6 +223,7 @@ class ProductService
         }
 
         $product->update(['stock_quantity' => $quantity]);
+
         return $product;
     }
 

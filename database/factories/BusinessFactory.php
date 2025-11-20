@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Modules\Business\Models\Business;
 use App\Models\User;
+use App\Modules\Business\Models\Business;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -27,7 +27,7 @@ class BusinessFactory extends Factory
     public function definition(): array
     {
         $businessTypes = ['barber', 'nail_studio', 'hair_salon', 'massage'];
-        $businessName = fake()->company() . ' ' . fake()->randomElement(['Barber Shop', 'Salon', 'Spa', 'Studio']);
+        $businessName = fake()->company().' '.fake()->randomElement(['Barber Shop', 'Salon', 'Spa', 'Studio']);
 
         return [
             'uuid' => (string) Str::uuid(),

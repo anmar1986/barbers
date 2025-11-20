@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\AnalyticsService;
 use App\Modules\Business\Models\Business;
+use App\Services\AnalyticsService;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class AnalyticsController extends Controller
 {
@@ -52,7 +51,7 @@ class AnalyticsController extends Controller
         // Get user's business
         $business = Business::where('user_id', $user->id)->first();
 
-        if (!$business) {
+        if (! $business) {
             return response()->json([
                 'success' => false,
                 'message' => 'Business not found',
@@ -147,7 +146,7 @@ class AnalyticsController extends Controller
             $data = $this->analyticsService->getPlatformAnalytics($startDate, $endDate);
         } else {
             $business = Business::where('user_id', $user->id)->first();
-            if (!$business) {
+            if (! $business) {
                 return response()->json(['success' => false, 'message' => 'Business not found'], 404);
             }
 
@@ -182,7 +181,7 @@ class AnalyticsController extends Controller
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($data) {
+        $callback = function () use ($data) {
             $file = fopen('php://output', 'w');
 
             // Write summary data

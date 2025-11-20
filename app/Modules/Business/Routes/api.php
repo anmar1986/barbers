@@ -17,7 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload/images', [UploadController::class, 'uploadMultipleImages']);
     Route::post('/upload/video', [UploadController::class, 'uploadVideo']);
     Route::delete('/upload/file', [UploadController::class, 'deleteFile']);
-    
+
     // Business owner management routes
     Route::prefix('my-business')->group(function () {
         Route::get('/', [BusinessManagementController::class, 'getMyBusiness']);

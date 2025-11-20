@@ -42,12 +42,11 @@ class BusinessHours extends Model
 
     /**
      * Get day name from day_of_week number.
-     *
-     * @return string
      */
     public function getDayNameAttribute(): string
     {
         $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
         return $days[$this->day_of_week] ?? '';
     }
 }

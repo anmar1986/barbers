@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class AnalyticsService
 {

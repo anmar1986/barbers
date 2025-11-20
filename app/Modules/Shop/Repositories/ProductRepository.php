@@ -20,21 +20,21 @@ class ProductRepository
                 'category:id,name,slug',
                 'images' => function ($q) {
                     $q->orderBy('display_order');
-                }
+                },
             ]);
 
         // Filter by business
-        if (!empty($filters['business_id'])) {
+        if (! empty($filters['business_id'])) {
             $query->where('business_id', $filters['business_id']);
         }
 
         // Filter by category
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
         }
 
         // Filter by category slug
-        if (!empty($filters['category_slug'])) {
+        if (! empty($filters['category_slug'])) {
             $category = ProductCategory::where('slug', $filters['category_slug'])->first();
             if ($category) {
                 $query->where('category_id', $category->id);
@@ -42,10 +42,10 @@ class ProductRepository
         }
 
         // Filter by price range
-        if (!empty($filters['min_price'])) {
+        if (! empty($filters['min_price'])) {
             $query->where('price', '>=', $filters['min_price']);
         }
-        if (!empty($filters['max_price'])) {
+        if (! empty($filters['max_price'])) {
             $query->where('price', '<=', $filters['max_price']);
         }
 
@@ -55,17 +55,17 @@ class ProductRepository
         }
 
         // Search by name or description
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%')
-                  ->orWhere('description', 'like', '%' . $filters['search'] . '%');
+                $q->where('name', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('description', 'like', '%'.$filters['search'].'%');
             });
         }
 
         // Sorting
         $sortBy = $filters['sort_by'] ?? 'created_at';
         $sortOrder = $filters['sort_order'] ?? 'desc';
-        
+
         $allowedSorts = ['created_at', 'price', 'rating', 'view_count', 'name'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortOrder);
@@ -84,7 +84,7 @@ class ProductRepository
             'category:id,name,slug',
             'images' => function ($q) {
                 $q->orderBy('display_order');
-            }
+            },
         ])->where('uuid', $uuid)->first();
     }
 
@@ -97,11 +97,11 @@ class ProductRepository
             'category:id,name,slug',
             'images' => function ($q) {
                 $q->where('is_primary', true)->limit(1);
-            }
+            },
         ])
-        ->where('business_id', $businessId)
-        ->orderBy('created_at', 'desc')
-        ->paginate($perPage);
+            ->where('business_id', $businessId)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
     /**
@@ -113,13 +113,13 @@ class ProductRepository
             'business:id,uuid,business_name,slug',
             'images' => function ($q) {
                 $q->where('is_primary', true)->limit(1);
-            }
+            },
         ])
-        ->where('stock_quantity', '>', 0)
-        ->where('rating', '>=', 4.0)
-        ->orderBy('view_count', 'desc')
-        ->limit($limit)
-        ->get();
+            ->where('stock_quantity', '>', 0)
+            ->where('rating', '>=', 4.0)
+            ->orderBy('view_count', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -131,12 +131,12 @@ class ProductRepository
             'business:id,uuid,business_name,slug',
             'images' => function ($q) {
                 $q->where('is_primary', true)->limit(1);
-            }
+            },
         ])
-        ->where('stock_quantity', '>', 0)
-        ->orderBy('sales_count', 'desc')
-        ->limit($limit)
-        ->get();
+            ->where('stock_quantity', '>', 0)
+            ->orderBy('sales_count', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -148,13 +148,13 @@ class ProductRepository
             'business:id,uuid,business_name,slug',
             'images' => function ($q) {
                 $q->where('is_primary', true)->limit(1);
-            }
+            },
         ])
-        ->where('stock_quantity', '>', 0)
-        ->where('created_at', '>=', now()->subDays(30))
-        ->orderBy('created_at', 'desc')
-        ->limit($limit)
-        ->get();
+            ->where('stock_quantity', '>', 0)
+            ->where('created_at', '>=', now()->subDays(30))
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -179,6 +179,7 @@ class ProductRepository
     public function updateStock(Product $product, int $quantity): Product
     {
         $product->update(['stock_quantity' => $quantity]);
+
         return $product->fresh();
     }
 }

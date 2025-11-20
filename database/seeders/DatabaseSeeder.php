@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         // Clear existing data
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
+
         // Truncate tables in correct order
         DB::table('notifications')->truncate();
         DB::table('favorites')->truncate();
@@ -37,48 +37,48 @@ class DatabaseSeeder extends Seeder
         DB::table('business_hours')->truncate();
         DB::table('businesses')->truncate();
         DB::table('users')->truncate();
-        
+
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 1. Create Users (Normal Users and Business Owners)
         $this->createUsers();
-        
+
         // 2. Create Businesses
         $this->createBusinesses();
-        
+
         // 3. Create Business Hours
         $this->createBusinessHours();
-        
+
         // 4. Create Services
         $this->createServices();
-        
+
         // 5. Create Media Gallery
         $this->createMediaGallery();
-        
+
         // 6. Create Reviews
         $this->createReviews();
-        
+
         // 7. Create Follows
         $this->createFollows();
-        
+
         // 8. Create Videos
         $this->createVideos();
-        
+
         // 9. Create Video Interactions
         $this->createVideoInteractions();
-        
+
         // 10. Create Product Categories
         $this->createProductCategories();
-        
+
         // 11. Create Products
         $this->createProducts();
-        
+
         // 12. Create Orders
         $this->createOrders();
-        
+
         // 13. Create Favorites
         $this->createFavorites();
-        
+
         // 14. Create Notifications
         $this->createNotifications();
 
@@ -88,7 +88,7 @@ class DatabaseSeeder extends Seeder
     private function createUsers(): void
     {
         $this->command->info('Creating users...');
-        
+
         // Admin user
         DB::table('users')->insert([
             'uuid' => Str::uuid(),
@@ -121,9 +121,9 @@ class DatabaseSeeder extends Seeder
             DB::table('users')->insert(array_merge($owner, [
                 'uuid' => Str::uuid(),
                 'password' => Hash::make('password'),
-                'phone' => '+1' . rand(2000000000, 9999999999),
+                'phone' => '+1'.rand(2000000000, 9999999999),
                 'user_type' => 'business',
-                'date_of_birth' => '1985-' . rand(1, 12) . '-' . rand(1, 28),
+                'date_of_birth' => '1985-'.rand(1, 12).'-'.rand(1, 28),
                 'email_verified_at' => now(),
                 'is_active' => true,
                 'created_at' => now()->subDays(rand(30, 365)),
@@ -149,10 +149,10 @@ class DatabaseSeeder extends Seeder
             DB::table('users')->insert(array_merge($user, [
                 'uuid' => Str::uuid(),
                 'password' => Hash::make('password'),
-                'phone' => '+1' . rand(2000000000, 9999999999),
+                'phone' => '+1'.rand(2000000000, 9999999999),
                 'user_type' => 'normal',
-                'date_of_birth' => '1990-' . rand(1, 12) . '-' . rand(1, 28),
-                'profile_picture' => 'https://ui-avatars.com/api/?name=' . urlencode($user['first_name'] . '+' . $user['last_name']),
+                'date_of_birth' => '1990-'.rand(1, 12).'-'.rand(1, 28),
+                'profile_picture' => 'https://ui-avatars.com/api/?name='.urlencode($user['first_name'].'+'.$user['last_name']),
                 'email_verified_at' => now(),
                 'is_active' => true,
                 'created_at' => now()->subDays(rand(1, 180)),
@@ -164,7 +164,7 @@ class DatabaseSeeder extends Seeder
     private function createBusinesses(): void
     {
         $this->command->info('Creating businesses...');
-        
+
         $businesses = [
             [
                 'user_id' => 2,
@@ -280,7 +280,7 @@ class DatabaseSeeder extends Seeder
         foreach ($businesses as $business) {
             $slug = Str::slug($business['business_name']);
             $uuid = Str::uuid();
-            
+
             DB::table('businesses')->insert(array_merge($business, [
                 'uuid' => $uuid,
                 'slug' => $slug,
@@ -298,11 +298,11 @@ class DatabaseSeeder extends Seeder
     private function createBusinessHours(): void
     {
         $this->command->info('Creating business hours...');
-        
+
         for ($businessId = 1; $businessId <= 8; $businessId++) {
             for ($day = 0; $day <= 6; $day++) {
                 $isClosed = $day == 0; // Closed on Sunday
-                
+
                 DB::table('business_hours')->insert([
                     'business_id' => $businessId,
                     'day_of_week' => $day,
@@ -319,7 +319,7 @@ class DatabaseSeeder extends Seeder
     private function createServices(): void
     {
         $this->command->info('Creating services...');
-        
+
         $services = [
             // Barber services (business 1, 5, 7)
             1 => [
@@ -382,7 +382,7 @@ class DatabaseSeeder extends Seeder
                     'uuid' => Str::uuid(),
                     'business_id' => $businessId,
                     'name' => $service['name'],
-                    'description' => 'Professional ' . strtolower($service['name']) . ' service',
+                    'description' => 'Professional '.strtolower($service['name']).' service',
                     'price' => $service['price'],
                     'duration_minutes' => $service['duration_minutes'],
                     'is_available' => true,
@@ -396,15 +396,15 @@ class DatabaseSeeder extends Seeder
     private function createMediaGallery(): void
     {
         $this->command->info('Creating media gallery...');
-        
+
         for ($businessId = 1; $businessId <= 8; $businessId++) {
             for ($i = 1; $i <= rand(3, 6); $i++) {
                 DB::table('media_gallery')->insert([
                     'business_id' => $businessId,
                     'media_type' => 'image',
-                    'media_url' => 'https://picsum.photos/800/600?random=' . ($businessId * 100 + $i),
-                    'thumbnail_url' => 'https://picsum.photos/200/150?random=' . ($businessId * 100 + $i),
-                    'caption' => 'Portfolio image ' . $i,
+                    'media_url' => 'https://picsum.photos/800/600?random='.($businessId * 100 + $i),
+                    'thumbnail_url' => 'https://picsum.photos/200/150?random='.($businessId * 100 + $i),
+                    'caption' => 'Portfolio image '.$i,
                     'display_order' => $i,
                     'is_featured' => $i == 1,
                     'created_at' => now(),
@@ -417,7 +417,7 @@ class DatabaseSeeder extends Seeder
     private function createReviews(): void
     {
         $this->command->info('Creating reviews...');
-        
+
         $reviewTexts = [
             'Amazing service! Highly recommend.',
             'Very professional and talented staff.',
@@ -446,12 +446,12 @@ class DatabaseSeeder extends Seeder
     private function createFollows(): void
     {
         $this->command->info('Creating follows...');
-        
+
         for ($userId = 10; $userId <= 19; $userId++) {
             $businessesToFollow = range(1, 8);
             shuffle($businessesToFollow);
             $businessesToFollow = array_slice($businessesToFollow, 0, rand(2, 5));
-            
+
             foreach ($businessesToFollow as $businessId) {
                 DB::table('follows')->insert([
                     'follower_id' => $userId,
@@ -466,7 +466,7 @@ class DatabaseSeeder extends Seeder
     private function createVideos(): void
     {
         $this->command->info('Creating videos...');
-        
+
         $videoTitles = [
             'Perfect Fade Tutorial',
             'Classic Haircut Technique',
@@ -487,8 +487,8 @@ class DatabaseSeeder extends Seeder
                     'business_id' => $businessId,
                     'title' => $videoTitles[array_rand($videoTitles)],
                     'description' => 'Watch this amazing tutorial! #barber #tutorial #hairstyle',
-                    'video_url' => 'https://example.com/videos/' . Str::random(16) . '.mp4',
-                    'thumbnail_url' => 'https://picsum.photos/720/1280?random=' . ($businessId * 10 + $i),
+                    'video_url' => 'https://example.com/videos/'.Str::random(16).'.mp4',
+                    'thumbnail_url' => 'https://picsum.photos/720/1280?random='.($businessId * 10 + $i),
                     'duration' => rand(15, 180),
                     'video_format' => 'mp4',
                     'resolution' => '1080x1920',
@@ -519,9 +519,9 @@ class DatabaseSeeder extends Seeder
     private function createVideoInteractions(): void
     {
         $this->command->info('Creating video interactions...');
-        
+
         $videoCount = DB::table('videos')->count();
-        
+
         // Video likes
         for ($videoId = 1; $videoId <= $videoCount; $videoId++) {
             for ($i = 0; $i < rand(5, 20); $i++) {
@@ -565,7 +565,7 @@ class DatabaseSeeder extends Seeder
     private function createProductCategories(): void
     {
         $this->command->info('Creating product categories...');
-        
+
         $categories = [
             ['name' => 'Hair Care', 'slug' => 'hair-care'],
             ['name' => 'Styling Products', 'slug' => 'styling-products'],
@@ -577,7 +577,7 @@ class DatabaseSeeder extends Seeder
 
         foreach ($categories as $category) {
             DB::table('product_categories')->insert(array_merge($category, [
-                'description' => 'Professional ' . strtolower($category['name']),
+                'description' => 'Professional '.strtolower($category['name']),
                 'display_order' => array_search($category, $categories) + 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -588,7 +588,7 @@ class DatabaseSeeder extends Seeder
     private function createProducts(): void
     {
         $this->command->info('Creating products...');
-        
+
         $products = [
             ['name' => 'Premium Hair Pomade', 'category_id' => 2, 'price' => 24.99, 'business_id' => 1],
             ['name' => 'Professional Scissors', 'category_id' => 3, 'price' => 89.99, 'business_id' => 1],
@@ -606,7 +606,7 @@ class DatabaseSeeder extends Seeder
             $productId = DB::table('products')->insertGetId(array_merge($product, [
                 'uuid' => Str::uuid(),
                 'slug' => Str::slug($product['name']),
-                'description' => 'High-quality ' . strtolower($product['name']) . ' for professional results.',
+                'description' => 'High-quality '.strtolower($product['name']).' for professional results.',
                 'compare_price' => $product['price'] * 1.2,
                 'stock_quantity' => rand(10, 100),
                 'created_at' => now()->subDays(rand(30, 180)),
@@ -617,7 +617,7 @@ class DatabaseSeeder extends Seeder
             for ($i = 1; $i <= rand(2, 4); $i++) {
                 DB::table('product_images')->insert([
                     'product_id' => $productId,
-                    'image_url' => 'https://picsum.photos/600/600?random=' . ($productId * 10 + $i),
+                    'image_url' => 'https://picsum.photos/600/600?random='.($productId * 10 + $i),
                     'display_order' => $i,
                     'is_primary' => $i == 1,
                     'created_at' => now(),
@@ -630,16 +630,16 @@ class DatabaseSeeder extends Seeder
     private function createOrders(): void
     {
         $this->command->info('Creating orders...');
-        
+
         for ($i = 1; $i <= 15; $i++) {
             $userId = rand(10, 19);
             $subtotal = rand(30, 200);
             $tax = $subtotal * 0.08;
             $shipping = 5.99;
             $total = $subtotal + $tax + $shipping;
-            
+
             $orderId = DB::table('orders')->insertGetId([
-                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+                'order_number' => 'ORD-'.strtoupper(Str::random(8)),
                 'user_id' => $userId,
                 'status' => ['confirmed', 'processing', 'shipped', 'delivered'][rand(0, 3)],
                 'subtotal' => $subtotal,
@@ -648,7 +648,7 @@ class DatabaseSeeder extends Seeder
                 'total' => $total,
                 'payment_method' => 'stripe',
                 'payment_status' => 'paid',
-                'payment_transaction_id' => 'txn_' . Str::random(16),
+                'payment_transaction_id' => 'txn_'.Str::random(16),
                 'shipping_address' => '123 Customer Street, City, State 12345',
                 'billing_address' => '123 Customer Street, City, State 12345',
                 'created_at' => now()->subDays(rand(1, 60)),
@@ -660,7 +660,7 @@ class DatabaseSeeder extends Seeder
                 $productId = rand(1, 10);
                 $quantity = rand(1, 3);
                 $price = rand(15, 50);
-                
+
                 DB::table('order_items')->insert([
                     'order_id' => $orderId,
                     'product_id' => $productId,
@@ -678,7 +678,7 @@ class DatabaseSeeder extends Seeder
     private function createFavorites(): void
     {
         $this->command->info('Creating favorites...');
-        
+
         for ($userId = 10; $userId <= 19; $userId++) {
             // Favorite businesses
             for ($i = 0; $i < rand(2, 4); $i++) {
@@ -715,7 +715,7 @@ class DatabaseSeeder extends Seeder
     private function createNotifications(): void
     {
         $this->command->info('Creating notifications...');
-        
+
         $notificationTypes = [
             ['type' => 'new_follower', 'title' => 'New Follower', 'message' => 'Someone started following your business!'],
             ['type' => 'new_review', 'title' => 'New Review', 'message' => 'You received a new review!'],

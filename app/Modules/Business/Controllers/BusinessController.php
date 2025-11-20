@@ -31,7 +31,7 @@ class BusinessController extends Controller
             'search',
             'verified',
             'order_by',
-            'order_direction'
+            'order_direction',
         ]);
 
         $businesses = $this->businessService->getAllBusinesses($filters);
@@ -49,7 +49,7 @@ class BusinessController extends Controller
     {
         $business = $this->businessService->getBusinessByUuid($uuid);
 
-        if (!$business) {
+        if (! $business) {
             return response()->json([
                 'success' => false,
                 'message' => 'Business not found',
@@ -300,7 +300,7 @@ class BusinessController extends Controller
         $business = Business::where('uuid', $uuid)->firstOrFail();
 
         // Check if not following
-        if (!$this->businessService->isFollowing($business, $request->user()->id)) {
+        if (! $this->businessService->isFollowing($business, $request->user()->id)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Not following this business',

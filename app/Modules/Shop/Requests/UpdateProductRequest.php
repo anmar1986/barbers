@@ -22,7 +22,7 @@ class UpdateProductRequest extends FormRequest
             'price' => 'sometimes|numeric|min:0',
             'compare_price' => 'nullable|numeric|min:0',
             'cost_per_item' => 'nullable|numeric|min:0',
-            'sku' => 'nullable|string|max:100|unique:products,sku,' . $productId . ',uuid',
+            'sku' => 'nullable|string|max:100|unique:products,sku,'.$productId.',uuid',
             'barcode' => 'nullable|string|max:100',
             'stock_quantity' => 'sometimes|integer|min:0',
             'track_inventory' => 'sometimes|boolean',
@@ -31,7 +31,7 @@ class UpdateProductRequest extends FormRequest
             'weight_unit' => 'nullable|in:kg,g,lb,oz',
             'images' => 'nullable|array',
             'images.*' => 'string',
-            'replace_images' => 'boolean'
+            'replace_images' => 'boolean',
         ];
     }
 }

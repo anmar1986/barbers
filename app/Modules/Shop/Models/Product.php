@@ -101,9 +101,10 @@ class Product extends Model
      */
     public function inStock(): bool
     {
-        if (!$this->track_inventory) {
+        if (! $this->track_inventory) {
             return true;
         }
+
         return $this->stock_quantity > 0;
     }
 
@@ -120,9 +121,10 @@ class Product extends Model
      */
     public function getDiscountPercentageAttribute(): ?int
     {
-        if (!$this->hasDiscount()) {
+        if (! $this->hasDiscount()) {
             return null;
         }
+
         return round((($this->compare_price - $this->price) / $this->compare_price) * 100);
     }
 

@@ -18,20 +18,20 @@ class BusinessRepository
             ->where('is_active', true);
 
         // Filter by business type
-        if (!empty($filters['business_type'])) {
+        if (! empty($filters['business_type'])) {
             $query->where('business_type', $filters['business_type']);
         }
 
         // Filter by city
-        if (!empty($filters['city'])) {
+        if (! empty($filters['city'])) {
             $query->where('city', $filters['city']);
         }
 
         // Search by name or description
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('business_name', 'like', '%' . $filters['search'] . '%')
-                  ->orWhere('description', 'like', '%' . $filters['search'] . '%');
+                $q->where('business_name', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('description', 'like', '%'.$filters['search'].'%');
             });
         }
 
@@ -41,14 +41,14 @@ class BusinessRepository
         }
 
         // Filter by rating
-        if (!empty($filters['min_rating'])) {
+        if (! empty($filters['min_rating'])) {
             $query->where('rating', '>=', $filters['min_rating']);
         }
 
         // Order by
         $orderBy = $filters['order_by'] ?? 'created_at';
         $orderDirection = $filters['order_direction'] ?? 'desc';
-        
+
         // Validate order by column
         $allowedColumns = ['created_at', 'rating', 'review_count', 'follower_count', 'business_name'];
         if (in_array($orderBy, $allowedColumns)) {
@@ -68,13 +68,13 @@ class BusinessRepository
             'hours',
             'services' => function ($query) {
                 $query->where('is_available', true)
-                      ->orderBy('name');
+                    ->orderBy('name');
             },
             'reviews' => function ($query) {
                 $query->with('user:id,first_name,last_name,profile_picture')
-                      ->orderBy('created_at', 'desc')
-                      ->limit(10);
-            }
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10);
+            },
         ])->where('uuid', $uuid)->first();
     }
 

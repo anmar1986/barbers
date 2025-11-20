@@ -26,8 +26,6 @@ class UserListScreen extends Screen
 
     /**
      * The name of the screen displayed in the header.
-     *
-     * @return string|null
      */
     public function name(): ?string
     {
@@ -99,10 +97,9 @@ class UserListScreen extends Screen
                     ->render(fn (User $user) => $user->created_at->format('Y-m-d H:i')),
 
                 TD::make('actions', 'Actions')
-                    ->render(fn (User $user) =>
-                        Link::make('View')
-                            ->route('platform.systems.users.edit', $user->id)
-                            ->icon('eye')
+                    ->render(fn (User $user) => Link::make('View')
+                        ->route('platform.systems.users.edit', $user->id)
+                        ->icon('eye')
                     ),
             ]),
         ];
