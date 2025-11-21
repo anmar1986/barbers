@@ -160,6 +160,6 @@ class BusinessRepository
      */
     public function incrementViews(Business $business): void
     {
-        $business->increment('view_count');
+        $business->incrementViews();
     }
 }
