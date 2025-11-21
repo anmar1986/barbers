@@ -132,7 +132,7 @@ jobs:
           echo "DB_USERNAME=root" >> .env
           echo "DB_PASSWORD=password" >> .env
       - run: php artisan migrate --force
-      - run: php artisan test --parallel
+      - run: php artisan test
 
   # ============================================
   # React Jobs
