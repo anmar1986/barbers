@@ -9,7 +9,8 @@ class VideoUploadService {
   final String _baseUrl;
 
   // Upload configuration
-  static const int chunkSize = 1536 * 1024; // 1.5MB chunks (fits within PHP's 2MB default)
+  static const int chunkSize =
+      1536 * 1024; // 1.5MB chunks (fits within PHP's 2MB default)
   static const int maxFileSize = 500 * 1024 * 1024; // 500MB max
 
   VideoUploadService({
@@ -88,7 +89,8 @@ class VideoUploadService {
 
     final fileSize = await file.length();
     if (fileSize > maxFileSize) {
-      throw VideoUploadException('File size exceeds maximum allowed size of ${maxFileSize ~/ (1024 * 1024)}MB');
+      throw VideoUploadException(
+          'File size exceeds maximum allowed size of ${maxFileSize ~/ (1024 * 1024)}MB');
     }
 
     final fileName = file.path.split(Platform.pathSeparator).last;
@@ -125,7 +127,8 @@ class VideoUploadService {
       }
 
       final progress = (chunkIndex + 1) / totalChunks;
-      onProgress?.call(progress * 0.9, 'Uploading chunk ${chunkIndex + 1}/$totalChunks...');
+      onProgress?.call(
+          progress * 0.9, 'Uploading chunk ${chunkIndex + 1}/$totalChunks...');
 
       await _uploadChunk(
         uploadId: uploadId,
@@ -187,7 +190,8 @@ class VideoUploadService {
     final compressionResult = await compressVideo(
       inputPath,
       onProgress: (progress) {
-        onProgress?.call(progress * 0.5, 'Compressing video... ${(progress * 100).toInt()}%');
+        onProgress?.call(progress * 0.5,
+            'Compressing video... ${(progress * 100).toInt()}%');
       },
     );
 
@@ -220,7 +224,8 @@ class VideoUploadService {
   }
 
   /// Get upload status for resuming
-  Future<UploadStatus> getUploadStatus(String uploadId, String authToken) async {
+  Future<UploadStatus> getUploadStatus(
+      String uploadId, String authToken) async {
     final response = await _dio.get(
       '$_baseUrl/upload/chunked/status/$uploadId',
       options: Options(
@@ -274,8 +279,10 @@ class VideoUploadService {
         throw VideoUploadException('Upload cancelled');
       }
 
-      final progress = (status.uploadedChunks.length + i + 1) / status.totalChunks;
-      onProgress?.call(progress * 0.9, 'Resuming upload... chunk ${chunkIndex + 1}/${status.totalChunks}');
+      final progress =
+          (status.uploadedChunks.length + i + 1) / status.totalChunks;
+      onProgress?.call(progress * 0.9,
+          'Resuming upload... chunk ${chunkIndex + 1}/${status.totalChunks}');
 
       final raf = await file.open();
       await raf.setPosition(offset);
@@ -363,7 +370,8 @@ class VideoUploadService {
     }
   }
 
-  Stream<Uint8List> _chunkStream(Stream<List<int>> source, int chunkSize) async* {
+  Stream<Uint8List> _chunkStream(
+      Stream<List<int>> source, int chunkSize) async* {
     var buffer = <int>[];
 
     await for (final data in source) {
@@ -423,7 +431,8 @@ class VideoCompressionResult {
     required this.durationMs,
   });
 
-  String get savedPercentage => '${((1 - (compressedSize / originalSize)) * 100).toStringAsFixed(1)}%';
+  String get savedPercentage =>
+      '${((1 - (compressedSize / originalSize)) * 100).toStringAsFixed(1)}%';
 }
 
 class ChunkedUploadResult {
