@@ -117,7 +117,7 @@ const GoogleMap = ({
                         ` : ''}
                         ${business.average_rating ? `
                             <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280;">
-                                ⭐ ${business.average_rating.toFixed(1)} (${business.total_reviews || 0} reviews)
+                                ⭐ ${parseFloat(business.average_rating).toFixed(1)} (${business.total_reviews || 0} reviews)
                             </p>
                         ` : ''}
                         ${business.uuid ? `

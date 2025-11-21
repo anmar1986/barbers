@@ -70,11 +70,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: Colors.white,
-                  size: 60,
-                ),
+                const Icon(Icons.error_outline, color: Colors.white, size: 60),
                 const SizedBox(height: 16),
                 Text(
                   'Error playing video',
@@ -96,9 +92,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         placeholder: Container(
           color: Colors.black,
           child: const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-            ),
+            child: CircularProgressIndicator(color: Colors.white),
           ),
         ),
       );
@@ -134,18 +128,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.videocam_off,
-                color: Colors.white,
-                size: 60,
-              ),
+              const Icon(Icons.videocam_off, color: Colors.white, size: 60),
               const SizedBox(height: 16),
               const Text(
                 'Unable to play video',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 8),
@@ -173,9 +160,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       return Container(
         color: Colors.black,
         child: const Center(
-          child: CircularProgressIndicator(
-            color: Colors.white,
-          ),
+          child: CircularProgressIndicator(color: Colors.white),
         ),
       );
     }
@@ -185,9 +170,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       child: Center(
         child: AspectRatio(
           aspectRatio: _videoPlayerController.value.aspectRatio,
-          child: Chewie(
-            controller: _chewieController!,
-          ),
+          child: Chewie(controller: _chewieController!),
         ),
       ),
     );
@@ -212,25 +195,67 @@ class SimpleVideoPlayer extends StatefulWidget {
 class _SimpleVideoPlayerState extends State<SimpleVideoPlayer> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _hasError = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.videoUrl),
-    )..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
-          if (widget.autoPlay) {
-            _controller.play();
-            _controller.setLooping(true);
-          }
+    _initializePlayer();
+  }
+
+  Future<void> _initializePlayer() async {
+    try {
+      debugPrint('Initializing video player with URL: ${widget.videoUrl}');
+
+      if (widget.videoUrl.isEmpty) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = 'Video URL is empty';
+        });
+        return;
+      }
+
+      // Validate URL format
+      Uri videoUri;
+      try {
+        videoUri = Uri.parse(widget.videoUrl);
+        debugPrint('Parsed video URI: $videoUri');
+      } catch (e) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = 'Invalid video URL format: $e';
+        });
+        return;
+      }
+
+      _controller = VideoPlayerController.networkUrl(videoUri);
+
+      await _controller.initialize();
+
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+
+        debugPrint(
+          'Video initialized successfully. Duration: ${_controller.value.duration}',
+        );
+
+        if (widget.autoPlay) {
+          _controller.play();
+          _controller.setLooping(true);
         }
-      }).catchError((error) {
-        debugPrint('Error initializing video: $error');
-      });
+      }
+    } catch (error) {
+      debugPrint('Error initializing video player: $error');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = error.toString();
+        });
+      }
+    }
   }
 
   @override
@@ -241,6 +266,44 @@ class _SimpleVideoPlayerState extends State<SimpleVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    // Error state
+    if (_hasError) {
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 60),
+              const SizedBox(height: 16),
+              const Text(
+                'Unable to play video',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    textAlign: TextAlign.center,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Loading state
     if (!_isInitialized) {
       return Container(
         color: Colors.black,
