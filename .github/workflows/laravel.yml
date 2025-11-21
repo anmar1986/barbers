@@ -1,24 +1,8 @@
 name: Laravel CI
 
+# Manual trigger only - automatic checks run in ci.yml instead
 on:
-  push:
-    branches: [main, master, develop, 'BB-*']
-    paths:
-      - '**.php'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'phpstan.neon'
-      - 'phpunit.xml'
-      - '.github/workflows/laravel.yml'
-  pull_request:
-    branches: [main, master, develop]
-    paths:
-      - '**.php'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'phpstan.neon'
-      - 'phpunit.xml'
-      - '.github/workflows/laravel.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read

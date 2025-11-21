@@ -1,26 +1,8 @@
 name: React CI
 
+# Manual trigger only - automatic checks run in ci.yml instead
 on:
-  push:
-    branches: [main, master, develop, 'BB-*']
-    paths:
-      - 'resources/js/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.js'
-      - 'eslint.config.js'
-      - 'tailwind.config.js'
-      - '.github/workflows/react.yml'
-  pull_request:
-    branches: [main, master, develop]
-    paths:
-      - 'resources/js/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.js'
-      - 'eslint.config.js'
-      - 'tailwind.config.js'
-      - '.github/workflows/react.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read

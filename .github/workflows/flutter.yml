@@ -1,16 +1,8 @@
 name: Flutter CI
 
+# Manual trigger only - automatic checks run in ci.yml instead
 on:
-  push:
-    branches: [main, master, develop, 'BB-*']
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/flutter.yml'
-  pull_request:
-    branches: [main, master, develop]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/flutter.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
