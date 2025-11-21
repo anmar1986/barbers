@@ -136,6 +136,9 @@ export default {
         'lg': '12px',
         'xl': '16px',
       },
+      aspectRatio: {
+        'video': '9 / 16',
+      },
     },
   },
   plugins: [],

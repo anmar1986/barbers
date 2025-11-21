@@ -47,7 +47,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist
 
       - name: Run Pint
         run: vendor/bin/pint --test
@@ -188,6 +188,7 @@ jobs:
         if: success()
         continue-on-error: true
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: laravel
           name: laravel-coverage
