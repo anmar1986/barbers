@@ -8,14 +8,15 @@ use App\Modules\Videos\Models\VideoComment;
 use App\Modules\Videos\Models\VideoHashtag;
 use App\Modules\Videos\Models\VideoLike;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class VideoService
 {
     /**
-     * Get video feed (TikTok-style infinite scroll).
+     * Get video feed with pagination.
      */
-    public function getVideoFeed(array $filters = [], int $limit = 20): Collection
+    public function getVideoFeed(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = Video::with(['business.user', 'hashtags'])
             ->where('status', 'published')
@@ -35,16 +36,11 @@ class VideoService
             });
         }
 
-        // Cursor-based pagination
-        if (isset($filters['cursor'])) {
-            $query->where('id', '<', $filters['cursor']);
-        }
-
         // Order by - default is newest first, can be changed to trending
         $orderBy = $filters['order_by'] ?? 'created_at';
         $query->orderBy($orderBy, 'desc');
 
-        return $query->limit($limit)->get();
+        return $query->paginate($perPage);
     }
 
     /**
@@ -241,17 +237,16 @@ class VideoService
     }
 
     /**
-     * Get trending videos (most viewed/liked in last 7 days).
+     * Get trending videos with pagination (most viewed/liked in last 7 days).
      */
-    public function getTrendingVideos(int $limit = 20): Collection
+    public function getTrendingVideos(int $perPage = 20): LengthAwarePaginator
     {
         return Video::with(['business.user', 'hashtags'])
             ->where('status', 'published')
             ->where('is_public', true)
             ->where('created_at', '>=', now()->subDays(7))
             ->orderByRaw('(view_count * 0.3) + (like_count * 0.5) + (comment_count * 0.2) DESC')
-            ->limit($limit)
-            ->get();
+            ->paginate($perPage);
     }
 
     /**

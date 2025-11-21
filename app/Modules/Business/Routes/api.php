@@ -2,6 +2,7 @@
 
 use App\Modules\Business\Controllers\BusinessController;
 use App\Modules\Business\Controllers\BusinessManagementController;
+use App\Modules\Business\Controllers\ChunkedUploadController;
 use App\Modules\Business\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload/images', [UploadController::class, 'uploadMultipleImages']);
     Route::post('/upload/video', [UploadController::class, 'uploadVideo']);
     Route::delete('/upload/file', [UploadController::class, 'deleteFile']);
+
+    // Chunked upload routes (for large video files)
+    Route::prefix('upload/chunked')->group(function () {
+        Route::post('/init', [ChunkedUploadController::class, 'initializeUpload']);
+        Route::post('/chunk', [ChunkedUploadController::class, 'uploadChunk']);
+        Route::post('/complete', [ChunkedUploadController::class, 'completeUpload']);
+        Route::get('/status/{uploadId}', [ChunkedUploadController::class, 'getUploadStatus']);
+        Route::delete('/cancel/{uploadId}', [ChunkedUploadController::class, 'cancelUpload']);
+    });
 
     // Business owner management routes
     Route::prefix('my-business')->group(function () {

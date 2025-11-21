@@ -1,13 +1,19 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/api_constants.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../widgets/video_player_widget.dart';
+import '../services/video_upload_service.dart';
 
 /// Upload Video Screen
-/// Allows users to record or pick a video and upload it
+/// Allows users to record or pick a video and upload it with compression
 class UploadVideoScreen extends ConsumerStatefulWidget {
   const UploadVideoScreen({super.key});
 
@@ -22,13 +28,35 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
 
   XFile? _videoFile;
   bool _isUploading = false;
+  bool _isCompressing = false;
   double _uploadProgress = 0.0;
+  String _uploadStatus = '';
+  int? _originalSize;
+  int? _compressedSize;
+  CancelToken? _cancelToken;
+
+  VideoUploadService? _uploadService;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _cancelToken?.cancel();
     super.dispose();
+  }
+
+  VideoUploadService _getUploadService() {
+    if (_uploadService == null) {
+      final dio = ref.read(dioClientProvider).dio;
+      _uploadService = VideoUploadService(
+          dio: dio, baseUrl: '${ApiConstants.baseUrl}/business');
+    }
+    return _uploadService!;
   }
 
   Future<void> _pickVideoFromGallery() async {
@@ -39,8 +67,13 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
       );
 
       if (video != null) {
+        final file = File(video.path);
+        final size = await file.length();
+
         setState(() {
           _videoFile = video;
+          _originalSize = size;
+          _compressedSize = null;
         });
       }
     } catch (e) {
@@ -63,8 +96,13 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
       );
 
       if (video != null) {
+        final file = File(video.path);
+        final size = await file.length();
+
         setState(() {
           _videoFile = video;
+          _originalSize = size;
+          _compressedSize = null;
         });
       }
     } catch (e) {
@@ -102,20 +140,57 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
 
     setState(() {
       _isUploading = true;
+      _isCompressing = true;
       _uploadProgress = 0.0;
+      _uploadStatus = 'Preparing...';
     });
 
+    _cancelToken = CancelToken();
+
     try {
-      // TODO: Implement actual upload to backend
-      // Simulate upload progress
-      for (var i = 0; i <= 100; i += 10) {
-        await Future.delayed(const Duration(milliseconds: 200));
-        if (mounted) {
-          setState(() {
-            _uploadProgress = i / 100;
-          });
-        }
+      // Get auth token from storage
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('auth_token');
+      if (authToken == null) {
+        throw VideoUploadException('Not authenticated');
       }
+
+      // Get user and check if business owner
+      final user = ref.read(currentUserProvider);
+      int? businessId;
+      bool shouldCreateVideoRecord = false;
+      // Business ID would come from user's business data if they are a business owner
+      // For now, we'll set it to null and let the backend handle it
+      if (user?.userType == 'business') {
+        // In a full implementation, you'd fetch business data here
+        // For now, we'll pass null and the backend will associate with user's business
+        shouldCreateVideoRecord = true;
+      }
+
+      final uploadService = _getUploadService();
+
+      // Use compress and upload for professional quality
+      await uploadService.compressAndUpload(
+        _videoFile!.path,
+        directory: 'videos/business',
+        authToken: authToken,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        businessId: businessId,
+        createVideoRecord: shouldCreateVideoRecord,
+        onProgress: (progress, status) {
+          if (mounted) {
+            setState(() {
+              _uploadProgress = progress;
+              _uploadStatus = status;
+              if (progress > 0.5) {
+                _isCompressing = false;
+              }
+            });
+          }
+        },
+        cancelToken: _cancelToken,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -128,11 +203,20 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
         // Navigate back
         context.pop();
       }
-    } catch (e) {
+    } on VideoUploadException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error uploading video: $e'),
+            content: Text(e.message),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted && !_cancelToken!.isCancelled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload video. Please try again.'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -141,9 +225,26 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
       if (mounted) {
         setState(() {
           _isUploading = false;
+          _isCompressing = false;
         });
       }
     }
+  }
+
+  void _cancelUpload() {
+    _cancelToken?.cancel();
+    setState(() {
+      _isUploading = false;
+      _isCompressing = false;
+      _uploadProgress = 0.0;
+      _uploadStatus = '';
+    });
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   @override
@@ -210,7 +311,7 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
 
             // Description
             Text(
-              'Share your best moments with the community',
+              'Share your best moments with the community\nVideos will be automatically compressed for best quality',
               style: TextStyle(
                 fontSize: 16,
                 color: AppColors.textSecondary,
@@ -272,10 +373,11 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Uploading... ${(_uploadProgress * 100).toInt()}%',
+                              _uploadStatus,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -286,8 +388,19 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
                                 value: _uploadProgress,
                                 backgroundColor:
                                     Colors.white.withValues(alpha: 0.3),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  _isCompressing ? Colors.orange : Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: _cancelUpload,
+                              icon:
+                                  const Icon(Icons.cancel, color: Colors.white),
+                              label: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ],
@@ -298,6 +411,42 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+
+          // File size info
+          if (_originalSize != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.movie, size: 20, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Original size: ${_formatFileSize(_originalSize!)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (_compressedSize != null) ...[
+                    const Text(' → ',
+                        style: TextStyle(color: AppColors.textSecondary)),
+                    Text(
+                      _formatFileSize(_compressedSize!),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           const SizedBox(height: 16),
 
           // Change Video Button
@@ -306,6 +455,8 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
               onPressed: () {
                 setState(() {
                   _videoFile = null;
+                  _originalSize = null;
+                  _compressedSize = null;
                 });
               },
               icon: const Icon(Icons.refresh),
@@ -348,22 +499,46 @@ class _UploadVideoScreenState extends ConsumerState<UploadVideoScreen> {
                 color: AppColors.infoBackground,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Your video will be reviewed before publishing',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.compress,
+                        color: AppColors.primary,
+                        size: 20,
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Video will be automatically compressed for optimal quality',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.cloud_upload,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Upload can be resumed if interrupted',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

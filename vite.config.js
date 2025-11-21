@@ -23,8 +23,18 @@ export default defineConfig({
         host: 'localhost',
         port: 5173,
         strictPort: true,
+        // Enable SharedArrayBuffer for FFmpeg.wasm video compression
+        // Using 'credentialless' instead of 'require-corp' to allow CDN resources
+        headers: {
+            'Cross-Origin-Embedder-Policy': 'credentialless',
+            'Cross-Origin-Opener-Policy': 'same-origin',
+        },
         proxy: {
             '/api': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+            },
+            '/storage': {
                 target: 'http://localhost:8000',
                 changeOrigin: true,
             },
@@ -34,5 +44,8 @@ export default defineConfig({
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
         },
+    },
+    optimizeDeps: {
+        exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
     },
 });
