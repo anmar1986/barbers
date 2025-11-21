@@ -23,11 +23,7 @@ const BusinessList = () => {
     const [userLocation, setUserLocation] = useState(null);
     
     // Detect route and set default business type
-    const getDefaultBusinessType = () => {
-        if (location.pathname.includes('/barbers')) return 'barber';
-        if (location.pathname.includes('/beauty')) return 'beauty';
-        return searchParams.get('type') || '';
-    };
+
     
     const [filters, setFilters] = useState({
         business_type: '',
@@ -102,7 +98,7 @@ const BusinessList = () => {
         if (newType && newType !== filters.business_type) {
             setFilters(prev => ({ ...prev, business_type: newType }));
         }
-    }, [location.pathname]);
+    }, [location.pathname, filters.business_type]);
 
     useEffect(() => {
         fetchBusinesses();
@@ -118,7 +114,7 @@ const BusinessList = () => {
                     });
                 },
                 (error) => {
-                    console.log('Location access denied:', error);
+                    // Location access denied - continue without location
                 }
             );
         }
@@ -141,21 +137,16 @@ const BusinessList = () => {
                 queryParams.lng = userLocation.lng;
             }
 
-            console.log('Fetching businesses with params:', queryParams);
             const response = await businessAPI.getAll(queryParams);
-            console.log('API Response:', response);
-            console.log('API Response data:', response.data);
             
             let data = response.data.data?.data || response.data.data || [];
-            console.log('Extracted businesses:', data);
             
             // If business_type was 'beauty', filter client-side for beauty types
             if (isBeautyFilter) {
-                const beautyTypes = ['nail_studio', 'hair_salon', 'massage'];
+                const beautyTypes = ['nail_studio', 'hair_salon', 'massage', 'spa'];
                 data = data.filter(business => 
                     beautyTypes.includes(business.business_type)
                 );
-                console.log('Filtered beauty businesses:', data);
             }
             
             setBusinesses(data);

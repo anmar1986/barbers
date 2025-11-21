@@ -162,7 +162,7 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
         
         setVideoError(true);
         const errorCode = e.target.error?.code;
-        let errorMsg = 'Unable to load video';
+        let errorMsg;
         
         switch (errorCode) {
             case 1: // MEDIA_ERR_ABORTED

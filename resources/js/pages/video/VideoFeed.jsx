@@ -120,7 +120,7 @@ const VideoFeed = () => {
                             >
                                 {/* Video Thumbnail */}
                                 <div
-                                    className="relative aspect-9/16 bg-gray-900 group cursor-pointer"
+                                    className="relative aspect-[9/16] bg-gray-900 group cursor-pointer"
                                     onClick={() => setSelectedVideo(video)}
                                 >
                                     {video.thumbnail_url ? (
@@ -232,7 +232,7 @@ const VideoFeed = () => {
 
                     {/* Video Player */}
                     <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-full max-w-lg h-full md:h-auto md:aspect-9/16">
+                        <div className="w-full max-w-lg h-full md:h-auto md:aspect-[9/16]">
                             <VideoPlayer
                                 video={selectedVideo}
                                 autoPlay={true}
