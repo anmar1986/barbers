@@ -25,7 +25,14 @@ class VideoRepository {
         // Backend returns { success, data, cursor }
         // DioClient already extracts data['data'] if data is Map
         if (data is List) {
-          return data.map((video) => Video.fromJson(video)).toList();
+          final videos = data.map((video) => Video.fromJson(video)).toList();
+          // Debug logging
+          if (videos.isNotEmpty) {
+            print('📹 Loaded ${videos.length} videos');
+            print('📹 First video URL: ${videos.first.videoUrl}');
+            print('📹 First video title: ${videos.first.title}');
+          }
+          return videos;
         }
         return [];
       },

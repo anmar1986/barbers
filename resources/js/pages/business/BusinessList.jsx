@@ -42,22 +42,30 @@ const BusinessList = ({ type = null }) => {
 
     const loadBusinesses = async () => {
         setLoading(true);
-        // Add type filter if specified
-        const searchFilters = { ...filters };
-        if (type === 'barber') {
-            searchFilters.type = 'barber';
-        } else if (type === 'beauty') {
-            // Filter for beauty types: nail_studio, hair_salon, massage, spa
-            searchFilters.beauty = true;
-        }
+        setError('');
+        try {
+            // Add type filter if specified
+            const searchFilters = { ...filters };
+            if (type === 'barber') {
+                searchFilters.business_type = 'barber';
+            } else if (type === 'beauty') {
+                // Filter for beauty types: nail_studio, hair_salon, massage, spa
+                searchFilters.beauty = true;
+            }
 
-        const result = await businessAPI.getAll(searchFilters);
-        if (result.success) {
-            setBusinesses(result.data);
-        } else {
-            setError(result.error);
+            const response = await businessAPI.getAll(searchFilters);
+            console.log('Business API response:', response.data);
+            
+            // Handle paginated response structure: response.data.data.data
+            const businessData = response.data.data?.data || response.data.data || [];
+            setBusinesses(businessData);
+        } catch (err) {
+            console.error('Error loading businesses:', err);
+            setError('Failed to load businesses');
+            setBusinesses([]);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const getRatingStars = (rating) => {
@@ -139,7 +147,7 @@ const BusinessList = ({ type = null }) => {
                                 className="bg-background rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
                             >
                                 {/* Business Image */}
-                                <div className="h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                                <div className="h-48 bg-linear-to-br from-primary-100 to-primary-200 flex items-center justify-center">
                                     {business.logo_url ? (
                                         <img
                                             src={business.logo_url}
@@ -164,7 +172,7 @@ const BusinessList = ({ type = null }) => {
                                             {getRatingStars(business.rating || 0)}
                                         </div>
                                         <span className="ml-2 text-sm text-text-secondary">
-                                            {business.rating ? business.rating.toFixed(1) : '0.0'}
+                                            {business.rating != null ? parseFloat(business.rating).toFixed(1) : '0.0'}
                                         </span>
                                     </div>
 

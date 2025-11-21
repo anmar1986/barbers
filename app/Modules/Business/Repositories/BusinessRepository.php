@@ -50,7 +50,7 @@ class BusinessRepository
         $orderDirection = $filters['order_direction'] ?? 'desc';
 
         // Validate order by column
-        $allowedColumns = ['created_at', 'rating', 'review_count', 'follower_count', 'business_name'];
+        $allowedColumns = ['created_at', 'average_rating', 'total_reviews', 'follower_count', 'business_name', 'view_count'];
         if (in_array($orderBy, $allowedColumns)) {
             $query->orderBy($orderBy, $orderDirection);
         }
@@ -160,6 +160,6 @@ class BusinessRepository
      */
     public function incrementViews(Business $business): void
     {
-        $business->increment('view_count');
+        $business->incrementViews();
     }
 }

@@ -15,6 +15,8 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
     const [newComment, setNewComment] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
     const [submittingComment, setSubmittingComment] = useState(false);
+    const [videoError, setVideoError] = useState(false);
+    const [videoErrorMessage, setVideoErrorMessage] = useState('');
 
     // Sync isLiked state with video prop when it changes
     useEffect(() => {
@@ -23,12 +25,24 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
 
     useEffect(() => {
         if (autoPlay && videoRef.current) {
-            videoRef.current.play().catch(() => {
-                // Autoplay was prevented
+            console.log('Attempting to autoplay video:', video.video_url);
+            videoRef.current.play().catch((error) => {
+                console.error('Autoplay was prevented:', error);
                 setIsPlaying(false);
             });
         }
     }, [autoPlay]);
+
+    // Validate video URL on mount
+    useEffect(() => {
+        if (!video.video_url || video.video_url.trim() === '') {
+            setVideoError(true);
+            setVideoErrorMessage('Video URL is empty');
+            console.error('Video URL is missing or empty');
+        } else {
+            console.log('Video player initialized with URL:', video.video_url);
+        }
+    }, [video.video_url]);
 
     useEffect(() => {
         if (showCommentsPanel && comments.length === 0) {
@@ -137,20 +151,76 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
         return date.toLocaleDateString();
     };
 
+    const handleVideoError = (e) => {
+        console.error('Video playback error:', e);
+        console.error('Video URL:', video.video_url);
+        console.error('Error details:', {
+            error: e.target.error,
+            networkState: e.target.networkState,
+            readyState: e.target.readyState
+        });
+        
+        setVideoError(true);
+        const errorCode = e.target.error?.code;
+        let errorMsg;
+        
+        switch (errorCode) {
+            case 1: // MEDIA_ERR_ABORTED
+                errorMsg = 'Video loading was aborted';
+                break;
+            case 2: // MEDIA_ERR_NETWORK
+                errorMsg = 'Network error while loading video';
+                break;
+            case 3: // MEDIA_ERR_DECODE
+                errorMsg = 'Video decoding failed';
+                break;
+            case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
+                errorMsg = 'Video format not supported or URL invalid';
+                break;
+            default:
+                errorMsg = e.target.error?.message || 'Unknown video error';
+        }
+        
+        setVideoErrorMessage(errorMsg);
+    };
+
+    const handleVideoLoaded = () => {
+        console.log('Video loaded successfully:', video.video_url);
+        setVideoError(false);
+    };
+
     return (
         <div className="relative w-full h-full bg-gray-900">
-            {/* Video Element */}
-            <video
-                ref={videoRef}
-                src={video.video_url}
-                poster={video.thumbnail_url}
-                loop
-                playsInline
-                muted={isMuted}
-                onEnded={onVideoEnd}
-                onClick={togglePlay}
-                className="w-full h-full object-contain cursor-pointer"
-            />
+            {/* Error State */}
+            {videoError ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black">
+                    <div className="text-center px-8">
+                        <svg className="h-16 w-16 text-white mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 className="text-white text-lg font-semibold mb-2">Unable to play video</h3>
+                        <p className="text-gray-400 text-sm">{videoErrorMessage}</p>
+                        {video.video_url && (
+                            <p className="text-gray-500 text-xs mt-2 break-all">URL: {video.video_url}</p>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* Video Element */}
+                    <video
+                        ref={videoRef}
+                        src={video.video_url}
+                        poster={video.thumbnail_url}
+                        loop
+                        playsInline
+                        muted={isMuted}
+                        onEnded={onVideoEnd}
+                        onClick={togglePlay}
+                        onError={handleVideoError}
+                        onLoadedData={handleVideoLoaded}
+                        className="w-full h-full object-contain cursor-pointer"
+                    />
 
             {/* Play/Pause Overlay */}
             {!isPlaying && (
@@ -165,7 +235,7 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
             )}
 
             {/* Video Info Overlay (Bottom) */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black to-transparent">
                 {/* Business Link */}
                 {video.business && (
                     <Link
@@ -302,7 +372,7 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
                         ) : (
                             comments.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-gray-700 shrink-0 flex items-center justify-center">
                                         <span className="text-white text-sm">
                                             {comment.user?.first_name?.charAt(0) || 'U'}
                                         </span>
@@ -355,6 +425,8 @@ const VideoPlayer = ({ video, autoPlay = false, onVideoEnd = null, showComments 
                         </div>
                     </form>
                 </div>
+            )}
+                </>
             )}
         </div>
     );

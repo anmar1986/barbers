@@ -26,14 +26,25 @@ class VideoResource extends JsonResource
             $isLiked = $this->isLikedBy($user->id);
         }
 
+        // Convert relative URLs to full URLs
+        $videoUrl = $this->video_url;
+        if ($videoUrl && ! str_starts_with($videoUrl, 'http')) {
+            $videoUrl = url($videoUrl);
+        }
+
+        $thumbnailUrl = $this->thumbnail_url;
+        if ($thumbnailUrl && ! str_starts_with($thumbnailUrl, 'http')) {
+            $thumbnailUrl = url($thumbnailUrl);
+        }
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
             'business_id' => $this->business_id,
             'title' => $this->title,
             'description' => $this->description,
-            'video_url' => $this->video_url,
-            'thumbnail_url' => $this->thumbnail_url,
+            'video_url' => $videoUrl,
+            'thumbnail_url' => $thumbnailUrl,
             'duration' => $this->duration,
             'video_format' => $this->video_format,
             'resolution' => $this->resolution,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { businessAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Container from '../components/Container';
@@ -12,6 +12,7 @@ import Badge from '../components/Badge';
 import GoogleMap from '../components/GoogleMap';
 
 const BusinessList = () => {
+    const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const { showError, showSuccess } = useToast();
 
@@ -20,15 +21,19 @@ const BusinessList = () => {
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', or 'map'
     const [showFilters, setShowFilters] = useState(true);
     const [userLocation, setUserLocation] = useState(null);
+    
+    // Detect route and set default business type
+
+    
     const [filters, setFilters] = useState({
-        business_type: searchParams.get('type') || '',
+        business_type: '',
         city: searchParams.get('city') || '',
         search: searchParams.get('search') || '',
         verified: searchParams.get('verified') || '',
         rating_min: searchParams.get('rating_min') || '',
         open_now: searchParams.get('open_now') || '',
         distance: searchParams.get('distance') || '',
-        order_by: 'rating',
+        order_by: 'average_rating',
         order_direction: 'desc',
     });
 
@@ -63,6 +68,39 @@ const BusinessList = () => {
 
     useEffect(() => {
         getUserLocation();
+        // Set initial business type based on route
+        let initialType = '';
+        if (location.pathname.includes('/barbers')) {
+            initialType = 'barber';
+        } else if (location.pathname.includes('/beauty')) {
+            initialType = 'beauty';
+        } else {
+            initialType = searchParams.get('type') || '';
+        }
+        
+        if (initialType) {
+            setFilters(prev => ({ ...prev, business_type: initialType }));
+        } else {
+            // Even if no type, trigger fetch
+            fetchBusinesses();
+        }
+    }, []);
+
+    useEffect(() => {
+        // Update business_type filter when route changes
+        let newType = '';
+        if (location.pathname.includes('/barbers')) {
+            newType = 'barber';
+        } else if (location.pathname.includes('/beauty')) {
+            newType = 'beauty';
+        }
+        
+        if (newType && newType !== filters.business_type) {
+            setFilters(prev => ({ ...prev, business_type: newType }));
+        }
+    }, [location.pathname, filters.business_type]);
+
+    useEffect(() => {
         fetchBusinesses();
     }, [filters]);
 
@@ -76,7 +114,7 @@ const BusinessList = () => {
                     });
                 },
                 (error) => {
-                    console.log('Location access denied:', error);
+                    // Location access denied - continue without location
                 }
             );
         }
@@ -86,16 +124,36 @@ const BusinessList = () => {
         setLoading(true);
         try {
             const queryParams = { ...filters };
+            
+            // Handle 'beauty' filter - it's not a real business_type
+            const isBeautyFilter = queryParams.business_type === 'beauty';
+            if (isBeautyFilter) {
+                // Remove the beauty filter from API params, we'll filter client-side
+                delete queryParams.business_type;
+            }
+            
             if (userLocation && filters.distance) {
                 queryParams.lat = userLocation.lat;
                 queryParams.lng = userLocation.lng;
             }
 
             const response = await businessAPI.getAll(queryParams);
-            const data = response.data.data?.data || response.data.data || [];
+            
+            let data = response.data.data?.data || response.data.data || [];
+            
+            // If business_type was 'beauty', filter client-side for beauty types
+            if (isBeautyFilter) {
+                const beautyTypes = ['nail_studio', 'hair_salon', 'massage', 'spa'];
+                data = data.filter(business => 
+                    beautyTypes.includes(business.business_type)
+                );
+            }
+            
             setBusinesses(data);
         } catch (error) {
-            console.error('Error fetching businesses:', error);
+            console.error('Error fetching businesses - Full error:', error);
+            console.error('Error response:', error.response);
+            console.error('Error message:', error.message);
             showError('Failed to load businesses');
             setBusinesses([]);
         } finally {
@@ -375,7 +433,7 @@ const BusinessList = () => {
                                                         <svg className="w-4 h-4 text-accent-500" fill="currentColor" viewBox="0 0 20 20">
                                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                                         </svg>
-                                                        {business.average_rating ? business.average_rating.toFixed(1) : 'N/A'}
+                                                        {business.average_rating != null ? parseFloat(business.average_rating).toFixed(1) : 'N/A'}
                                                     </div>
                                                     {business.is_verified && (
                                                         <Badge variant="success" size="sm" className="mt-1">Verified</Badge>
@@ -409,7 +467,7 @@ const BusinessList = () => {
                                 <Link key={business.id} to={`/businesses/${business.uuid}`}>
                                     <Card hover className={`overflow-hidden h-full ${viewMode === 'list' ? 'flex' : ''}`}>
                                         {/* Business Image */}
-                                        <div className={`bg-gradient-to-br from-primary-100 to-secondary-100 flex-shrink-0 ${
+                                        <div className={`bg-linear-to-br from-primary-100 to-secondary-100 shrink-0 ${
                                             viewMode === 'grid' ? 'h-48 w-full' : 'h-full w-48'
                                         }`}>
                                             {business.cover_image && (
@@ -421,7 +479,7 @@ const BusinessList = () => {
                                             )}
                                         </div>
 
-                                        <div className="p-6 flex flex-col flex-grow">
+                                        <div className="p-6 flex flex-col grow">
                                             {/* Business Info */}
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex-1">
@@ -466,7 +524,7 @@ const BusinessList = () => {
                                                     <svg className="w-4 h-4 text-accent-500" fill="currentColor" viewBox="0 0 20 20">
                                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                                     </svg>
-                                                    {business.average_rating ? business.average_rating.toFixed(1) : 'N/A'}
+                                                    {business.average_rating != null ? parseFloat(business.average_rating).toFixed(1) : 'N/A'}
                                                 </span>
                                                 <span>·</span>
                                                 <span>{business.total_reviews || 0} reviews</span>
