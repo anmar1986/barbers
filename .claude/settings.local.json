@@ -22,7 +22,10 @@
       "Bash(flutter pub get:*)",
       "Bash(flutter analyze:*)",
       "Bash(flutter doctor:*)",
-      "Bash(./vendor/bin/phpstan:*)"
+      "Bash(./vendor/bin/phpstan:*)",
+      "Bash(find:*)",
+      "Bash(git log:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
