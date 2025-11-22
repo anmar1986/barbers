@@ -160,9 +160,59 @@ jobs:
           fi
         continue-on-error: true
 
-      - name: Create dummy .env file
+      - name: Prepare build environment
         run: |
-          echo "API_BASE_URL=https://api.example.com" > .env
+          # Create .env file from example
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            echo "API_BASE_URL=https://api.example.com" > .env
+          fi
+          
+          # Ensure gradlew is executable
+          chmod +x android/gradlew
+          
+          # Clean any previous builds
+          flutter clean
+          
+          # Pre-download pub dependencies
+          flutter pub get
+
+      - name: Configure Gradle for CI
+        run: |
+          # Ensure gradle.properties has correct settings
+          cat > android/gradle.properties << EOF
+          org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:+HeapDumpOnOutOfMemoryError
+          org.gradle.daemon=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
+          android.useAndroidX=true
+          android.enableJetifier=true
+          android.builder.sdkDownload=true
+          EOF
+          
+          # Create local.properties with SDK location
+          cat > android/local.properties << EOF
+          sdk.dir=$ANDROID_HOME
+          flutter.sdk=$FLUTTER_ROOT
+          EOF
+
+      - name: Pre-build diagnostics
+        run: |
+          echo "Flutter version:"
+          flutter --version
+          echo ""
+          echo "Java version:"
+          java -version
+          echo ""
+          echo "Android SDK location: $ANDROID_HOME"
+          echo "Flutter SDK location: $FLUTTER_ROOT"
+          echo ""
+          echo "Checking .env file:"
+          ls -la .env || echo ".env not found!"
+          echo ""
+          echo "Flutter doctor:"
+          flutter doctor -v
 
       - name: Cache Gradle wrapper
         uses: actions/cache@v4
@@ -176,8 +226,15 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: Build APK (debug)
-        run: flutter build apk --debug --verbose
+        run: |
+          echo "Starting Flutter build..."
+          flutter build apk --debug --verbose 2>&1 | tee build.log || {
+            echo "Build failed! Showing last 100 lines of output:"
+            tail -100 build.log
+            exit 1
+          }
         timeout-minutes: 10
+        continue-on-error: false
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
