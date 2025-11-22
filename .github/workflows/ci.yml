@@ -311,8 +311,10 @@ jobs:
             echo "API_BASE_URL=https://api.example.com" > .env
           fi
           
-          # Ensure gradlew is executable
-          chmod +x android/gradlew
+          # Ensure gradlew is executable (only if it exists)
+          if [ -f android/gradlew ]; then
+            chmod +x android/gradlew
+          fi
           
           # Clean any previous builds
           flutter clean
