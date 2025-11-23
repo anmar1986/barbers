@@ -7,10 +7,16 @@ import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/main/screens/main_screen.dart';
-import '../../features/auth/providers/auth_provider.dart';
+import '../../features/barbers/screens/barbers_tab_screen.dart';
+import '../../features/barbers/screens/barber_detail_screen.dart';
+import '../../features/beauty/screens/beauty_tab_screen.dart';
+import '../../features/beauty/screens/beauty_detail_screen.dart';
+import '../../features/videos/screens/videos_tab_screen.dart';
+import '../../features/shop/screens/shop_tab_screen.dart';
+import '../../features/profile/screens/profile_tab_screen.dart';
 
 /// App Router Configuration
-/// Centralized routing using GoRouter
+/// Uses ShellRoute to keep navbar visible on all main pages
 class AppRouter {
   AppRouter._();
 
@@ -31,7 +37,7 @@ class AppRouter {
         builder: (context, state) => const OnboardingScreen(),
       ),
 
-      // ==================== AUTHENTICATION ====================
+      // ==================== AUTHENTICATION (Outside Shell) ====================
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
@@ -48,158 +54,195 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
 
-      // ==================== MAIN APP ====================
-      GoRoute(
-        path: AppRoutes.main,
-        name: 'main',
-        builder: (context, state) => const MainScreen(),
-      ),
-
-      // ==================== PROFILE MODULE ====================
-      GoRoute(
-        path: AppRoutes.profile,
-        name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.editProfile,
-        name: 'editProfile',
-        builder: (context, state) => const EditProfileScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        name: 'settings',
-        builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: '${AppRoutes.userProfile}/:userId',
-        name: 'userProfile',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return UserProfileScreen(userId: userId);
+      // ==================== MAIN APP WITH NAVBAR (ShellRoute) ====================
+      ShellRoute(
+        builder: (context, state, child) {
+          return MainScreen(child: child);
         },
-      ),
+        routes: [
+          // ---------- VIDEOS TAB ----------
+          GoRoute(
+            path: AppRoutes.videos,
+            name: 'videos',
+            builder: (context, state) => const VideosTabScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.videoDetail}/:videoId',
+            name: 'videoDetail',
+            builder: (context, state) {
+              final videoId = state.pathParameters['videoId']!;
+              return VideoDetailScreen(videoId: videoId);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.uploadVideo,
+            name: 'uploadVideo',
+            builder: (context, state) => const UploadVideoScreen(),
+          ),
 
-      // ==================== BUSINESS MODULE ====================
-      GoRoute(
-        path: '${AppRoutes.businessDetail}/:businessId',
-        name: 'businessDetail',
-        builder: (context, state) {
-          final businessId = state.pathParameters['businessId']!;
-          return BusinessDetailScreen(businessId: businessId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.businessSearch,
-        name: 'businessSearch',
-        builder: (context, state) => const BusinessSearchScreen(),
-      ),
+          // ---------- BEAUTY TAB ----------
+          GoRoute(
+            path: AppRoutes.beauty,
+            name: 'beauty',
+            builder: (context, state) => const BeautyTabScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.beautyDetail}/:beautyId',
+            name: 'beautyDetail',
+            builder: (context, state) {
+              final beautyId = state.pathParameters['beautyId']!;
+              return BeautyDetailScreen(businessId: beautyId);
+            },
+          ),
 
-      // ==================== BOOKING MODULE ====================
-      GoRoute(
-        path: '${AppRoutes.booking}/:businessId',
-        name: 'booking',
-        builder: (context, state) {
-          final businessId = state.pathParameters['businessId']!;
-          return BookingScreen(businessId: businessId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.bookingHistory,
-        name: 'bookingHistory',
-        builder: (context, state) => const BookingHistoryScreen(),
-      ),
-      GoRoute(
-        path: '${AppRoutes.bookingDetail}/:bookingId',
-        name: 'bookingDetail',
-        builder: (context, state) {
-          final bookingId = state.pathParameters['bookingId']!;
-          return BookingDetailScreen(bookingId: bookingId);
-        },
-      ),
+          // ---------- SHOP TAB ----------
+          GoRoute(
+            path: AppRoutes.shop,
+            name: 'shop',
+            builder: (context, state) => const ShopTabScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.productDetail}/:productId',
+            name: 'productDetail',
+            builder: (context, state) {
+              final productId = state.pathParameters['productId']!;
+              return ProductDetailScreen(productId: productId);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.cart,
+            name: 'cart',
+            builder: (context, state) => const CartScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.checkout,
+            name: 'checkout',
+            builder: (context, state) => const CheckoutScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.orders,
+            name: 'orders',
+            builder: (context, state) => const OrdersScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.orderDetail}/:orderId',
+            name: 'orderDetail',
+            builder: (context, state) {
+              final orderId = state.pathParameters['orderId']!;
+              return OrderDetailScreen(orderId: orderId);
+            },
+          ),
 
-      // ==================== VIDEO MODULE ====================
-      GoRoute(
-        path: '${AppRoutes.videoDetail}/:videoId',
-        name: 'videoDetail',
-        builder: (context, state) {
-          final videoId = state.pathParameters['videoId']!;
-          return VideoDetailScreen(videoId: videoId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.uploadVideo,
-        name: 'uploadVideo',
-        builder: (context, state) => const UploadVideoScreen(),
-      ),
+          // ---------- BARBERS TAB ----------
+          GoRoute(
+            path: AppRoutes.barbers,
+            name: 'barbers',
+            builder: (context, state) => const BarbersTabScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.barberDetail}/:barberId',
+            name: 'barberDetail',
+            builder: (context, state) {
+              final barberId = state.pathParameters['barberId']!;
+              return BarberDetailScreen(barberId: barberId);
+            },
+          ),
 
-      // ==================== SHOP MODULE ====================
-      GoRoute(
-        path: '${AppRoutes.productDetail}/:productId',
-        name: 'productDetail',
-        builder: (context, state) {
-          final productId = state.pathParameters['productId']!;
-          return ProductDetailScreen(productId: productId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.cart,
-        name: 'cart',
-        builder: (context, state) => const CartScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.checkout,
-        name: 'checkout',
-        builder: (context, state) => const CheckoutScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.orders,
-        name: 'orders',
-        builder: (context, state) => const OrdersScreen(),
-      ),
-      GoRoute(
-        path: '${AppRoutes.orderDetail}/:orderId',
-        name: 'orderDetail',
-        builder: (context, state) {
-          final orderId = state.pathParameters['orderId']!;
-          return OrderDetailScreen(orderId: orderId);
-        },
-      ),
+          // ---------- PROFILE TAB ----------
+          GoRoute(
+            path: AppRoutes.profile,
+            name: 'profile',
+            builder: (context, state) => const ProfileTabScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.editProfile,
+            name: 'editProfile',
+            builder: (context, state) => const EditProfileScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.settings,
+            name: 'settings',
+            builder: (context, state) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.userProfile}/:userId',
+            name: 'userProfile',
+            builder: (context, state) {
+              final userId = state.pathParameters['userId']!;
+              return UserProfileScreen(userId: userId);
+            },
+          ),
 
-      // ==================== CHAT MODULE ====================
-      GoRoute(
-        path: AppRoutes.conversations,
-        name: 'conversations',
-        builder: (context, state) => const ConversationsScreen(),
-      ),
-      GoRoute(
-        path: '${AppRoutes.chat}/:conversationId',
-        name: 'chat',
-        builder: (context, state) {
-          final conversationId = state.pathParameters['conversationId']!;
-          return ChatScreen(conversationId: conversationId);
-        },
-      ),
+          // ---------- BUSINESS COMMON ----------
+          GoRoute(
+            path: '${AppRoutes.businessDetail}/:businessId',
+            name: 'businessDetail',
+            builder: (context, state) {
+              final businessId = state.pathParameters['businessId']!;
+              return BusinessDetailScreen(businessId: businessId);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.businessSearch,
+            name: 'businessSearch',
+            builder: (context, state) => const BusinessSearchScreen(),
+          ),
 
-      // ==================== NOTIFICATIONS ====================
-      GoRoute(
-        path: AppRoutes.notifications,
-        name: 'notifications',
-        builder: (context, state) => const NotificationsScreen(),
-      ),
+          // ---------- BOOKING ----------
+          GoRoute(
+            path: '${AppRoutes.booking}/:businessId',
+            name: 'booking',
+            builder: (context, state) {
+              final businessId = state.pathParameters['businessId']!;
+              return BookingScreen(businessId: businessId);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.bookingHistory,
+            name: 'bookingHistory',
+            builder: (context, state) => const BookingHistoryScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.bookingDetail}/:bookingId',
+            name: 'bookingDetail',
+            builder: (context, state) {
+              final bookingId = state.pathParameters['bookingId']!;
+              return BookingDetailScreen(bookingId: bookingId);
+            },
+          ),
 
-      // ==================== SEARCH ====================
-      GoRoute(
-        path: AppRoutes.search,
-        name: 'search',
-        builder: (context, state) => const SearchScreen(),
-      ),
+          // ---------- CHAT ----------
+          GoRoute(
+            path: AppRoutes.conversations,
+            name: 'conversations',
+            builder: (context, state) => const ConversationsScreen(),
+          ),
+          GoRoute(
+            path: '${AppRoutes.chat}/:conversationId',
+            name: 'chat',
+            builder: (context, state) {
+              final conversationId = state.pathParameters['conversationId']!;
+              return ChatScreen(conversationId: conversationId);
+            },
+          ),
 
-      // ==================== ANALYTICS (Business Only) ====================
-      GoRoute(
-        path: AppRoutes.analytics,
-        name: 'analytics',
-        builder: (context, state) => const AnalyticsScreen(),
+          // ---------- OTHER ----------
+          GoRoute(
+            path: AppRoutes.notifications,
+            name: 'notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.search,
+            name: 'search',
+            builder: (context, state) => const SearchScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.analytics,
+            name: 'analytics',
+            builder: (context, state) => const AnalyticsScreen(),
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) => ErrorScreen(error: state.error),
@@ -217,11 +260,14 @@ class AppRoutes {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
 
-  // Main
-  static const String main = '/main';
+  // Main Tabs
+  static const String videos = '/videos';
+  static const String beauty = '/beauty';
+  static const String shop = '/shop';
+  static const String barbers = '/barbers';
+  static const String profile = '/profile';
 
   // Profile
-  static const String profile = '/profile';
   static const String editProfile = '/profile/edit';
   static const String settings = '/settings';
   static const String userProfile = '/user';
@@ -230,10 +276,16 @@ class AppRoutes {
   static const String businessDetail = '/business';
   static const String businessSearch = '/business/search';
 
+  // Barbers
+  static const String barberDetail = '/barber';
+
+  // Beauty
+  static const String beautyDetail = '/beauty-service';
+
   // Booking
   static const String booking = '/booking';
   static const String bookingHistory = '/bookings';
-  static const String bookingDetail = '/booking';
+  static const String bookingDetail = '/booking-detail';
 
   // Video
   static const String videoDetail = '/video';
@@ -256,11 +308,9 @@ class AppRoutes {
   static const String analytics = '/analytics';
 }
 
-// ==================== PLACEHOLDER SCREENS ====================
-// These will be replaced with actual implementations
+// ==================== SPLASH SCREEN ====================
+// Goes directly to main app (shop tab) - no login required for browsing
 
-/// Splash Screen with Auto Navigation
-/// Checks authentication status and navigates accordingly
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -276,20 +326,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigateAfterDelay() async {
-    // Wait for initialization and minimum splash duration
+    // Wait for minimum splash duration
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
-    // Check authentication status
-    final authState = ref.read(authProvider);
-
-    // Navigate based on authentication status
-    if (authState.isAuthenticated) {
-      context.go(AppRoutes.main);
-    } else {
-      context.go(AppRoutes.login);
-    }
+    // Go directly to shop (main app) - guest access allowed
+    context.go(AppRoutes.shop);
   }
 
   @override
@@ -322,6 +365,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 }
 
+// ==================== PLACEHOLDER SCREENS ====================
+// These will be replaced with actual implementations
+
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
@@ -330,18 +376,6 @@ class OnboardingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Onboarding')),
       body: const Center(child: Text('Onboarding Screen')),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: const Center(child: Text('Profile Screen')),
     );
   }
 }

@@ -43,8 +43,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result is Success) {
-      // Navigate to main screen
-      context.go(AppRoutes.main);
+      // Navigate to shop (main app)
+      context.go(AppRoutes.shop);
     } else if (result is Failure) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

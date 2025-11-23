@@ -1,0 +1,562 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../shared/models/business_model.dart';
+import '../providers/barber_provider.dart';
+
+/// Barber Detail Screen
+/// Shows full details of a barber shop
+class BarberDetailScreen extends ConsumerWidget {
+  final String barberId;
+
+  const BarberDetailScreen({super.key, required this.barberId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final barberState = ref.watch(barberDetailProvider(barberId));
+
+    if (barberState.isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: const Text('Loading...'),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (barberState.error != null || barberState.barber == null) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: const Text('Error'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 60, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text(
+                barberState.error ?? 'Barber not found',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () =>
+                    ref.read(barberDetailProvider(barberId).notifier).loadBarber(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final barber = barberState.barber!;
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // App Bar with Cover Image
+          SliverAppBar(
+            expandedHeight: 250,
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                barber.businessName,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 1),
+                      blurRadius: 3,
+                      color: Colors.black54,
+                    ),
+                  ],
+                ),
+              ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Cover Image
+                  if (barber.coverImage != null)
+                    Image.network(
+                      barber.coverImage!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        child: const Icon(
+                          Icons.content_cut,
+                          size: 80,
+                          color: AppColors.textWhite,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      child: const Icon(
+                        Icons.content_cut,
+                        size: 80,
+                        color: AppColors.textWhite,
+                      ),
+                    ),
+                  // Gradient overlay
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.7),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.share),
+                onPressed: () {
+                  // TODO: Share barber
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.favorite_border),
+                onPressed: () {
+                  // TODO: Follow barber
+                },
+              ),
+            ],
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Logo and Info Row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Logo
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
+                          color: AppColors.backgroundGrey,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: barber.logo != null
+                              ? Image.network(
+                                  barber.logo!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                    Icons.content_cut,
+                                    size: 40,
+                                    color: AppColors.primary,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.content_cut,
+                                  size: 40,
+                                  color: AppColors.primary,
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Rating
+                            Row(
+                              children: [
+                                const Icon(Icons.star,
+                                    size: 20, color: AppColors.star),
+                                const SizedBox(width: 4),
+                                Text(
+                                  barber.averageRating.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '(${barber.totalReviews} reviews)',
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            // Verified badge
+                            if (barber.isVerified)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.success,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.verified,
+                                        size: 14, color: AppColors.textWhite),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Verified',
+                                      style: TextStyle(
+                                        color: AppColors.textWhite,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            const SizedBox(height: 8),
+                            // Status
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: barber.isOpen
+                                    ? AppColors.success
+                                    : AppColors.error,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                barber.isOpen ? 'Open Now' : 'Closed',
+                                style: const TextStyle(
+                                  color: AppColors.textWhite,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Description
+                  if (barber.description != null &&
+                      barber.description!.isNotEmpty) ...[
+                    const Text(
+                      'About',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      barber.description!,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Contact Info
+                  const Text(
+                    'Contact',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _ContactItem(
+                    icon: Icons.location_on,
+                    label: 'Address',
+                    value:
+                        '${barber.address ?? ''}, ${barber.city ?? ''}, ${barber.state ?? ''}',
+                  ),
+                  if (barber.phone != null)
+                    _ContactItem(
+                      icon: Icons.phone,
+                      label: 'Phone',
+                      value: barber.phone!,
+                    ),
+                  if (barber.email != null)
+                    _ContactItem(
+                      icon: Icons.email,
+                      label: 'Email',
+                      value: barber.email!,
+                    ),
+                  if (barber.website != null)
+                    _ContactItem(
+                      icon: Icons.language,
+                      label: 'Website',
+                      value: barber.website!,
+                    ),
+                  const SizedBox(height: 24),
+
+                  // Working Hours
+                  if (barber.hours != null && barber.hours!.isNotEmpty) ...[
+                    const Text(
+                      'Working Hours',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundGrey,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: barber.hours!.map((hour) => _WorkingHourItem(
+                          hour: hour,
+                        )).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Services
+                  if (barber.services != null && barber.services!.isNotEmpty) ...[
+                    const Text(
+                      'Services',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...barber.services!.map((service) => _ServiceItem(
+                          service: service,
+                        )),
+                    const SizedBox(height: 24),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      // Book Now Button
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceWhite,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowMedium,
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: ElevatedButton(
+            onPressed: () {
+              // TODO: Navigate to booking
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Book Now',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textWhite,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Contact Item Widget
+class _ContactItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ContactItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: AppColors.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Service Item Widget
+class _ServiceItem extends StatelessWidget {
+  final BusinessService service;
+
+  const _ServiceItem({required this.service});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundGrey,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  service.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (service.description != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    service.description!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+                if (service.duration != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${service.duration} min',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (service.price != null)
+            Text(
+              '\$${service.price!.toStringAsFixed(0)}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Working Hour Item Widget
+class _WorkingHourItem extends StatelessWidget {
+  final BusinessHours hour;
+
+  const _WorkingHourItem({required this.hour});
+
+  @override
+  Widget build(BuildContext context) {
+    final isToday = DateTime.now().weekday % 7 == hour.dayOfWeek;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            hour.dayName,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+              color: isToday ? AppColors.primary : AppColors.textPrimary,
+            ),
+          ),
+          Text(
+            hour.isClosed
+                ? 'Closed'
+                : '${hour.openTime ?? '--:--'} - ${hour.closeTime ?? '--:--'}',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+              color: hour.isClosed
+                  ? AppColors.error
+                  : (isToday ? AppColors.primary : AppColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
