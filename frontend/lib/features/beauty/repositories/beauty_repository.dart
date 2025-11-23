@@ -67,7 +67,8 @@ class BeautyRepository {
         }
 
         // Parse businesses
-        final businesses = items.map((business) => Business.fromJson(business)).toList();
+        final businesses =
+            items.map((business) => Business.fromJson(business)).toList();
 
         // Filter by beauty types if no specific type provided (All filter)
         if (businessType == null) {

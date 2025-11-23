@@ -227,7 +227,8 @@ class _BarbersTabScreenState extends ConsumerState<BarbersTabScreen> {
                       return _BarberCard(
                         barber: barber,
                         onTap: () {
-                          context.push('${AppRoutes.barberDetail}/${barber.uuid}');
+                          context
+                              .push('${AppRoutes.barberDetail}/${barber.uuid}');
                         },
                       );
                     },
@@ -399,7 +400,8 @@ class _BarberCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: barber.isOpen ? AppColors.success : AppColors.error,
+                      color:
+                          barber.isOpen ? AppColors.success : AppColors.error,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(

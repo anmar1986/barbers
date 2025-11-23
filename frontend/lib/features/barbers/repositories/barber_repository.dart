@@ -129,7 +129,9 @@ class BarberRepository {
       '${ApiConstants.businessServices}/$uuid/services',
       parser: (data) {
         if (data is List) {
-          return data.map((service) => BusinessService.fromJson(service)).toList();
+          return data
+              .map((service) => BusinessService.fromJson(service))
+              .toList();
         }
         return [];
       },

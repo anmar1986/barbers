@@ -43,8 +43,9 @@ class BeautyDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () =>
-                    ref.read(beautyDetailProvider(businessId).notifier).loadBusiness(),
+                onPressed: () => ref
+                    .read(beautyDetailProvider(businessId).notifier)
+                    .loadBusiness(),
                 child: const Text('Retry'),
               ),
             ],
@@ -192,7 +193,8 @@ class BeautyDetailScreen extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.secondary.withValues(alpha: 0.1),
+                                color:
+                                    AppColors.secondary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -358,16 +360,19 @@ class BeautyDetailScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
-                        children: business.hours!.map((hour) => _WorkingHourItem(
-                          hour: hour,
-                        )).toList(),
+                        children: business.hours!
+                            .map((hour) => _WorkingHourItem(
+                                  hour: hour,
+                                ))
+                            .toList(),
                       ),
                     ),
                     const SizedBox(height: 24),
                   ],
 
                   // Services
-                  if (business.services != null && business.services!.isNotEmpty) ...[
+                  if (business.services != null &&
+                      business.services!.isNotEmpty) ...[
                     const Text(
                       'Services',
                       style: TextStyle(

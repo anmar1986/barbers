@@ -45,7 +45,8 @@ class BeautyListState {
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,
       searchQuery: searchQuery ?? this.searchQuery,
-      selectedType: clearSelectedType ? null : (selectedType ?? this.selectedType),
+      selectedType:
+          clearSelectedType ? null : (selectedType ?? this.selectedType),
     );
   }
 }
@@ -166,8 +167,9 @@ final beautyListProvider =
 });
 
 /// Provider for specific business type
-final beautyTypeProvider = StateNotifierProvider.family<BeautyListNotifier,
-    BeautyListState, String?>((ref, businessType) {
+final beautyTypeProvider =
+    StateNotifierProvider.family<BeautyListNotifier, BeautyListState, String?>(
+        (ref, businessType) {
   final notifier = BeautyListNotifier(ref.read(beautyRepositoryProvider));
   if (businessType != null) {
     notifier.setBusinessType(businessType);

@@ -595,7 +595,9 @@ class _BeautyCard extends StatelessWidget {
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          business.city ?? business.address ?? 'Location not set',
+                          business.city ??
+                              business.address ??
+                              'Location not set',
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,

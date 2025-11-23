@@ -57,14 +57,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // Check which tab route the current location belongs to
     if (location.startsWith('/videos') || location.startsWith('/video')) {
       return 0;
-    } else if (location.startsWith('/beauty') || location.startsWith('/beauty-service')) {
+    } else if (location.startsWith('/beauty') ||
+        location.startsWith('/beauty-service')) {
       return 1;
-    } else if (location.startsWith('/shop') || location.startsWith('/product') ||
-               location.startsWith('/cart') || location.startsWith('/checkout')) {
+    } else if (location.startsWith('/shop') ||
+        location.startsWith('/product') ||
+        location.startsWith('/cart') ||
+        location.startsWith('/checkout')) {
       return 2;
-    } else if (location.startsWith('/barbers') || location.startsWith('/barber')) {
+    } else if (location.startsWith('/barbers') ||
+        location.startsWith('/barber')) {
       return 3;
-    } else if (location.startsWith('/profile') || location.startsWith('/settings')) {
+    } else if (location.startsWith('/profile') ||
+        location.startsWith('/settings')) {
       return 4;
     }
 

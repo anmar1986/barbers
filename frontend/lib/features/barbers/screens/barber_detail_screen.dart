@@ -43,8 +43,9 @@ class BarberDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () =>
-                    ref.read(barberDetailProvider(barberId).notifier).loadBarber(),
+                onPressed: () => ref
+                    .read(barberDetailProvider(barberId).notifier)
+                    .loadBarber(),
                 child: const Text('Retry'),
               ),
             ],
@@ -338,16 +339,19 @@ class BarberDetailScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
-                        children: barber.hours!.map((hour) => _WorkingHourItem(
-                          hour: hour,
-                        )).toList(),
+                        children: barber.hours!
+                            .map((hour) => _WorkingHourItem(
+                                  hour: hour,
+                                ))
+                            .toList(),
                       ),
                     ),
                     const SizedBox(height: 24),
                   ],
 
                   // Services
-                  if (barber.services != null && barber.services!.isNotEmpty) ...[
+                  if (barber.services != null &&
+                      barber.services!.isNotEmpty) ...[
                     const Text(
                       'Services',
                       style: TextStyle(
