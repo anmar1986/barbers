@@ -29,7 +29,8 @@
       "Bash(mysql:*)",
       "Bash(/c/xampp/mysql/bin/mysql:*)",
       "Bash(npm view:*)",
-      "Bash(npm search:*)"
+      "Bash(npm search:*)",
+      "Bash(flutter build:*)"
     ],
     "deny": [],
     "ask": []
