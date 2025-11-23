@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Enable SharedArrayBuffer for FFmpeg.wasm video compression
+        $middleware->web(append: [
+            \App\Http\Middleware\CrossOriginIsolation::class,
+        ]);
+
         $middleware->alias([
             'optional.auth' => \App\Http\Middleware\OptionalAuth::class,
         ]);

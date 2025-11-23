@@ -22,41 +22,48 @@ class VideoController extends Controller
     ) {}
 
     /**
-     * Get video feed (TikTok-style).
+     * Get video feed with pagination.
      */
     public function feed(Request $request): JsonResponse
     {
         $filters = $request->only([
             'business_type',
             'hashtag',
-            'cursor',
             'order_by',
         ]);
 
-        $limit = $request->input('limit', 20);
-        $videos = $this->videoService->getVideoFeed($filters, $limit);
-
-        /** @var \App\Modules\Videos\Models\Video|null $lastVideo */
-        $lastVideo = $videos->last();
+        $perPage = min($request->input('limit', 20), 50);
+        $videos = $this->videoService->getVideoFeed($filters, $perPage);
 
         return response()->json([
             'success' => true,
             'data' => VideoResource::collection($videos),
-            'cursor' => $lastVideo?->id,
+            'meta' => [
+                'current_page' => $videos->currentPage(),
+                'last_page' => $videos->lastPage(),
+                'per_page' => $videos->perPage(),
+                'total' => $videos->total(),
+            ],
         ]);
     }
 
     /**
-     * Get trending videos.
+     * Get trending videos with pagination.
      */
     public function trending(Request $request): JsonResponse
     {
-        $limit = $request->input('limit', 20);
-        $videos = $this->videoService->getTrendingVideos($limit);
+        $perPage = min($request->input('limit', 20), 50);
+        $videos = $this->videoService->getTrendingVideos($perPage);
 
         return response()->json([
             'success' => true,
             'data' => VideoResource::collection($videos),
+            'meta' => [
+                'current_page' => $videos->currentPage(),
+                'last_page' => $videos->lastPage(),
+                'per_page' => $videos->perPage(),
+                'total' => $videos->total(),
+            ],
         ]);
     }
 

@@ -25,7 +25,11 @@
       "Bash(./vendor/bin/phpstan:*)",
       "Bash(find:*)",
       "Bash(git log:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(mysql:*)",
+      "Bash(/c/xampp/mysql/bin/mysql:*)",
+      "Bash(npm view:*)",
+      "Bash(npm search:*)"
     ],
     "deny": [],
     "ask": []

@@ -179,6 +179,37 @@ export const uploadAPI = {
         });
     },
     deleteFile: (path) => api.delete('/upload/file', { data: { path } }),
+
+    // Chunked Upload API (for large video files)
+    chunked: {
+        initialize: (fileName, fileSize, mimeType, chunkSize) =>
+            api.post('/upload/chunked/init', {
+                file_name: fileName,
+                file_size: fileSize,
+                mime_type: mimeType,
+                chunk_size: chunkSize,
+            }),
+        uploadChunk: (uploadId, chunkIndex, chunk) => {
+            const formData = new FormData();
+            formData.append('upload_id', uploadId);
+            formData.append('chunk_index', chunkIndex);
+            formData.append('chunk', chunk, `chunk_${chunkIndex}`);
+            return api.post('/upload/chunked/chunk', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+        },
+        complete: (uploadId, directory, options = {}) =>
+            api.post('/upload/chunked/complete', {
+                upload_id: uploadId,
+                directory: directory,
+                create_video: options.createVideo || false,
+                business_id: options.businessId,
+                title: options.title,
+                description: options.description,
+            }),
+        getStatus: (uploadId) => api.get(`/upload/chunked/status/${uploadId}`),
+        cancel: (uploadId) => api.delete(`/upload/chunked/cancel/${uploadId}`),
+    },
 };
 
 export default api;

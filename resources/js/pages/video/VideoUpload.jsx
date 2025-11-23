@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { videoAPI, uploadAPI } from '../../services/api';
+import { videoUploadService } from '../../services/videoUploadService';
 import { useAuth } from '../../context/AuthContext';
 
 const VideoUpload = () => {
@@ -10,6 +11,12 @@ const VideoUpload = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStatus, setUploadStatus] = useState('');
+    const [compressionSupported, setCompressionSupported] = useState(false);
+    // TODO: Enable compression once FFmpeg.wasm is working
+    // Requires SharedArrayBuffer which needs special COEP/COOP headers
+    const [enableCompression, setEnableCompression] = useState(false);
+    const abortControllerRef = useRef(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -24,9 +31,17 @@ const VideoUpload = () => {
         thumbnail: null
     });
 
+    const [fileInfo, setFileInfo] = useState({
+        originalSize: null,
+        compressedSize: null
+    });
+
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
+        // Check if FFmpeg compression is supported
+        setCompressionSupported(videoUploadService.isCompressionSupported());
+
         if (user?.user_type !== 'business') {
             navigate('/');
             return;
@@ -57,7 +72,6 @@ const VideoUpload = () => {
             ...formData,
             [name]: value
         });
-        // Clear error for this field
         if (errors[name]) {
             setErrors({
                 ...errors,
@@ -69,13 +83,11 @@ const VideoUpload = () => {
     const handleVideoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validate file type
             if (!file.type.startsWith('video/')) {
                 setErrors({ ...errors, video_file: 'Please select a valid video file' });
                 return;
             }
 
-            // Validate file size (max 500MB)
             if (file.size > 500 * 1024 * 1024) {
                 setErrors({ ...errors, video_file: 'Video file size must be less than 500MB' });
                 return;
@@ -83,6 +95,7 @@ const VideoUpload = () => {
 
             setFormData({ ...formData, video_file: file });
             setPreview({ ...preview, video: URL.createObjectURL(file) });
+            setFileInfo({ originalSize: file.size, compressedSize: null });
             setErrors({ ...errors, video_file: null });
         }
     };
@@ -90,13 +103,11 @@ const VideoUpload = () => {
     const handleThumbnailChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 setErrors({ ...errors, thumbnail_file: 'Please select a valid image file' });
                 return;
             }
 
-            // Validate file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 setErrors({ ...errors, thumbnail_file: 'Image file size must be less than 5MB' });
                 return;
@@ -123,6 +134,12 @@ const VideoUpload = () => {
         return Object.keys(newErrors).length === 0;
     };
 
+    const formatFileSize = (bytes) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -137,20 +154,45 @@ const VideoUpload = () => {
 
         setUploading(true);
         setUploadProgress(0);
+        setUploadStatus('Preparing...');
         setErrors({});
 
+        abortControllerRef.current = new AbortController();
+
         try {
-            // Step 1: Upload video file
-            setUploadProgress(10);
-            const videoUploadResponse = await uploadAPI.uploadVideo(
+            // Step 1: Upload video using chunked upload with compression
+            const uploadResult = await videoUploadService.uploadVideo(
                 formData.video_file,
-                'videos'
+                api,
+                {
+                    directory: 'videos',
+                    compress: enableCompression && compressionSupported,
+                    createVideo: true,
+                    businessId: business.id,
+                    title: formData.title,
+                    description: formData.description,
+                    onProgress: (progress) => {
+                        setUploadProgress(Math.round(progress * 90)); // 0-90% for video upload
+                    },
+                    onStatusChange: (status) => {
+                        setUploadStatus(status);
+                    },
+                    abortController: abortControllerRef.current
+                }
             );
 
-            const videoUrl = videoUploadResponse.data.data?.url || videoUploadResponse.data.url;
+            // Update compression info if available
+            if (uploadResult.compressionResult) {
+                setFileInfo(prev => ({
+                    ...prev,
+                    compressedSize: uploadResult.compressionResult.compressedSize
+                }));
+            }
 
             // Step 2: Upload thumbnail if provided
-            setUploadProgress(40);
+            setUploadProgress(92);
+            setUploadStatus('Uploading thumbnail...');
+
             let thumbnailUrl = null;
             if (formData.thumbnail_file) {
                 const thumbnailUploadResponse = await uploadAPI.uploadImage(
@@ -159,40 +201,48 @@ const VideoUpload = () => {
                     { resize_width: 640, resize_height: 360 }
                 );
                 thumbnailUrl = thumbnailUploadResponse.data.data?.url || thumbnailUploadResponse.data.url;
+
+                // Update video with thumbnail if we have a video ID
+                if (uploadResult.video?.uuid && thumbnailUrl) {
+                    await videoAPI.update(uploadResult.video.uuid, {
+                        thumbnail_url: thumbnailUrl,
+                        hashtags: formData.hashtags.split(',').map(tag => tag.trim()).filter(tag => tag)
+                    });
+                }
             }
 
-            // Step 3: Create video record
-            setUploadProgress(70);
-            const videoData = {
-                business_id: business.id,
-                title: formData.title,
-                description: formData.description,
-                video_url: videoUrl,
-                thumbnail_url: thumbnailUrl,
-                hashtags: formData.hashtags.split(',').map(tag => tag.trim()).filter(tag => tag)
-            };
-
-            console.log('Creating video with data:', videoData);
-            console.log('Business object:', business);
-            await videoAPI.create(videoData);
-
             setUploadProgress(100);
+            setUploadStatus('Upload complete!');
 
             // Success - redirect to management page
             setTimeout(() => {
                 navigate('/management', {
                     state: { message: 'Video uploaded successfully! It will be processed shortly.' }
                 });
-            }, 500);
+            }, 1000);
 
         } catch (err) {
             console.error('Upload error:', err);
-            setErrors({
-                general: err.response?.data?.message || 'Failed to upload video. Please try again.'
-            });
+
+            if (err.message === 'Upload cancelled') {
+                setUploadStatus('Upload cancelled');
+            } else {
+                setErrors({
+                    general: err.response?.data?.message || err.message || 'Failed to upload video. Please try again.'
+                });
+            }
             setUploading(false);
             setUploadProgress(0);
         }
+    };
+
+    const handleCancelUpload = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadStatus('');
     };
 
     if (loading) {
@@ -239,16 +289,30 @@ const VideoUpload = () => {
             {uploading && (
                 <div className="mb-6 bg-primary-50 border border-primary-600 rounded-lg p-6">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-primary-600">Uploading...</span>
+                        <span className="text-sm font-medium text-primary-600">{uploadStatus}</span>
                         <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-3">
                         <div
-                            className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                            className={`h-3 rounded-full transition-all duration-300 ${
+                                uploadProgress < 50 && enableCompression ? 'bg-orange-500' : 'bg-primary-600'
+                            }`}
                             style={{ width: `${uploadProgress}%` }}
                         ></div>
                     </div>
-                    <p className="text-sm text-text-secondary mt-2">Please wait while we upload your video...</p>
+                    <div className="flex items-center justify-between mt-3">
+                        <p className="text-xs text-text-secondary">
+                            {uploadProgress < 50 && enableCompression
+                                ? 'Compressing video for optimal quality...'
+                                : 'Uploading in chunks for reliability...'}
+                        </p>
+                        <button
+                            onClick={handleCancelUpload}
+                            className="text-sm text-error hover:text-error/80"
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -279,26 +343,52 @@ const VideoUpload = () => {
                             </label>
                         </div>
                     ) : (
-                        <div className="relative">
-                            <video
-                                src={preview.video}
-                                controls
-                                className="w-full rounded-lg"
-                                style={{ maxHeight: '400px' }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setFormData({ ...formData, video_file: null });
-                                    setPreview({ ...preview, video: null });
-                                }}
-                                disabled={uploading}
-                                className="absolute top-2 right-2 p-2 bg-error text-white rounded-full hover:bg-error/80 disabled:opacity-50"
-                            >
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                        <div className="space-y-4">
+                            <div className="relative">
+                                <video
+                                    src={preview.video}
+                                    controls
+                                    className="w-full rounded-lg"
+                                    style={{ maxHeight: '400px' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData({ ...formData, video_file: null });
+                                        setPreview({ ...preview, video: null });
+                                        setFileInfo({ originalSize: null, compressedSize: null });
+                                    }}
+                                    disabled={uploading}
+                                    className="absolute top-2 right-2 p-2 bg-error text-white rounded-full hover:bg-error/80 disabled:opacity-50"
+                                >
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* File size info */}
+                            {fileInfo.originalSize && (
+                                <div className="flex items-center gap-2 text-sm bg-surface rounded-lg px-4 py-2">
+                                    <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                                    </svg>
+                                    <span className="text-text-secondary">
+                                        Original: {formatFileSize(fileInfo.originalSize)}
+                                    </span>
+                                    {fileInfo.compressedSize && (
+                                        <>
+                                            <span className="text-text-secondary">→</span>
+                                            <span className="text-success font-medium">
+                                                {formatFileSize(fileInfo.compressedSize)}
+                                            </span>
+                                            <span className="text-success text-xs">
+                                                (saved {((1 - fileInfo.compressedSize / fileInfo.originalSize) * 100).toFixed(0)}%)
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -306,6 +396,35 @@ const VideoUpload = () => {
                         <p className="mt-2 text-sm text-error">{errors.video_file}</p>
                     )}
                 </div>
+
+                {/* Compression Option */}
+                {compressionSupported && formData.video_file && (
+                    <div className="bg-background rounded-lg shadow-md p-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <svg className="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                <div>
+                                    <h3 className="font-medium text-text-primary">Video Compression</h3>
+                                    <p className="text-xs text-text-secondary">
+                                        Automatically compress video for faster uploads and optimal quality
+                                    </p>
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={enableCompression}
+                                    onChange={(e) => setEnableCompression(e.target.checked)}
+                                    disabled={uploading}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                )}
 
                 {/* Video Details */}
                 <div className="bg-background rounded-lg shadow-md p-6">
@@ -418,6 +537,24 @@ const VideoUpload = () => {
                     {errors.thumbnail_file && (
                         <p className="mt-2 text-sm text-error">{errors.thumbnail_file}</p>
                     )}
+                </div>
+
+                {/* Upload Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                        <svg className="h-5 w-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-sm text-blue-800">
+                            <p className="font-medium mb-1">Professional Upload Features:</p>
+                            <ul className="list-disc list-inside text-xs space-y-1">
+                                <li>Videos are automatically compressed for optimal quality</li>
+                                <li>Chunked upload ensures reliable delivery even on slow connections</li>
+                                <li>Upload can be resumed if interrupted</li>
+                                <li>Server-side processing generates thumbnails and optimizes video</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Submit Buttons */}

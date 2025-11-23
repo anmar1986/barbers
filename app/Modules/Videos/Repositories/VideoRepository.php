@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\DB;
 class VideoRepository
 {
     /**
-     * Get video feed with cursor-based pagination.
+     * Get video feed with page-based pagination.
      */
-    public function getFeed(array $filters = [], int $limit = 20): Collection
+    public function getFeed(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = Video::query()
             ->with([
@@ -36,11 +36,6 @@ class VideoRepository
             });
         }
 
-        // Cursor-based pagination
-        if (! empty($filters['cursor'])) {
-            $query->where('id', '<', $filters['cursor']);
-        }
-
         // Order by
         $orderBy = $filters['order_by'] ?? 'created_at';
         $allowedOrders = ['created_at', 'view_count', 'like_count'];
@@ -49,13 +44,13 @@ class VideoRepository
             $query->orderBy($orderBy, 'desc');
         }
 
-        return $query->limit($limit)->get();
+        return $query->paginate($perPage);
     }
 
     /**
-     * Get trending videos.
+     * Get trending videos with pagination.
      */
-    public function getTrending(int $limit = 20): Collection
+    public function getTrending(int $perPage = 20): LengthAwarePaginator
     {
         return Video::query()
             ->with([
@@ -66,8 +61,7 @@ class VideoRepository
             ->where('created_at', '>=', now()->subDays(7))
             ->orderByRaw('(like_count * 2 + comment_count + share_count) DESC')
             ->orderBy('view_count', 'desc')
-            ->limit($limit)
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
