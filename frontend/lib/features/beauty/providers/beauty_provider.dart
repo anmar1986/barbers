@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/api_result.dart';
 import '../../../core/providers/dio_provider.dart';
+import '../../../core/utils/optional.dart';
 import '../../../shared/models/business_model.dart';
 import '../repositories/beauty_repository.dart';
 
@@ -35,8 +36,7 @@ class BeautyListState {
     int? currentPage,
     bool? hasMore,
     String? searchQuery,
-    String? selectedType,
-    bool clearSelectedType = false,
+    Optional<String?>? selectedType,
   }) {
     return BeautyListState(
       businesses: businesses ?? this.businesses,
@@ -46,8 +46,9 @@ class BeautyListState {
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,
       searchQuery: searchQuery ?? this.searchQuery,
-      selectedType:
-          clearSelectedType ? null : (selectedType ?? this.selectedType),
+      selectedType: selectedType != null && selectedType.isPresent
+          ? selectedType.value
+          : this.selectedType,
     );
   }
 }
@@ -149,8 +150,7 @@ class BeautyListNotifier extends StateNotifier<BeautyListState> {
   /// Filter by business type
   Future<void> setBusinessType(String? type) async {
     state = state.copyWith(
-      selectedType: type,
-      clearSelectedType: type == null,
+      selectedType: Optional.value(type),
     );
     await loadBusinesses(refresh: true);
   }
