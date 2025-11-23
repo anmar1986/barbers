@@ -39,7 +39,8 @@ class AuthRepository {
 
   /// Register new user
   Future<ApiResult<AuthResponse>> register({
-    required String name,
+    required String firstName,
+    required String lastName,
     required String email,
     required String password,
     required String passwordConfirmation,
@@ -49,7 +50,8 @@ class AuthRepository {
     final result = await _dioClient.post<AuthResponse>(
       ApiConstants.register,
       data: {
-        'name': name,
+        'first_name': firstName,
+        'last_name': lastName,
         'email': email,
         'password': password,
         'password_confirmation': passwordConfirmation,

@@ -49,12 +49,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
 
   AuthNotifier(this._authRepository) : super(const AuthState()) {
-    // Check if user is already logged in
-    _checkAuthStatus();
+    // Try to restore session from stored token (non-blocking)
+    _tryRestoreSession();
   }
 
-  /// Check authentication status on app start
-  Future<void> _checkAuthStatus() async {
+  /// Try to restore session from stored token
+  /// This is non-blocking - app works without login
+  Future<void> _tryRestoreSession() async {
+    // Don't set loading state - let user browse freely
+    final result = await _authRepository.getProfile();
+
+    result.onSuccess((user) {
+      // User was logged in, restore session
+      state = AuthState(
+        user: user,
+        isAuthenticated: true,
+        isLoading: false,
+      );
+    }).onFailure((_) {
+      // No valid session - user is guest (this is fine)
+      state = const AuthState(
+        isAuthenticated: false,
+        isLoading: false,
+      );
+    });
+  }
+
+  /// Manually check authentication status
+  Future<void> checkAuthStatus() async {
     state = state.copyWith(isLoading: true);
 
     final result = await _authRepository.getProfile();
@@ -103,7 +125,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Register
   Future<ApiResult<AuthResponse>> register({
-    required String name,
+    required String firstName,
+    required String lastName,
     required String email,
     required String password,
     required String passwordConfirmation,
@@ -113,7 +136,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     final result = await _authRepository.register(
-      name: name,
+      firstName: firstName,
+      lastName: lastName,
       email: email,
       password: password,
       passwordConfirmation: passwordConfirmation,

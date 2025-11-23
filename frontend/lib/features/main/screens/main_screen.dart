@@ -1,74 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../profile/screens/profile_tab_screen.dart';
-import '../../businesses/screens/businesses_tab_screen.dart';
-import '../../shop/screens/shop_tab_screen.dart';
-import '../../videos/screens/videos_tab_screen.dart';
+import '../../../core/router/app_router.dart';
 
-/// Main Screen with Bottom Navigation
-/// Contains 5 main tabs of the application
+/// Main Screen with Bottom Navigation (LTR Layout)
+/// Navbar order from right to left: Profile, Barbers, Shop, Beauty, Videos
+/// Which means left to right: Videos, Beauty, Shop, Barbers, Profile
 class MainScreen extends ConsumerStatefulWidget {
-  const MainScreen({super.key});
+  final Widget child;
+
+  const MainScreen({super.key, required this.child});
 
   @override
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int _currentIndex = 0;
-
-  // Tab screens
-  final List<Widget> _screens = const [
-    ProfileTabScreen(),
-    BusinessesTabScreen(),
-    VideosTabScreen(),
-    ShopTabScreen(),
-    ProfileTabScreen(), // Will be replaced with Settings/More
-  ];
-
-  // Navigation items
+  // Navigation items order (left to right): Videos, Beauty, Shop, Barbers, Profile
   final List<_NavigationItem> _navigationItems = const [
     _NavigationItem(
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home,
-      label: 'Home',
-    ),
-    _NavigationItem(
-      icon: Icons.store_outlined,
-      activeIcon: Icons.store,
-      label: 'Discover',
-    ),
-    _NavigationItem(
-      icon: Icons.video_library_outlined,
-      activeIcon: Icons.video_library,
+      icon: Icons.play_circle_outline,
+      activeIcon: Icons.play_circle,
       label: 'Videos',
+      route: AppRoutes.videos,
+    ),
+    _NavigationItem(
+      icon: Icons.spa_outlined,
+      activeIcon: Icons.spa,
+      label: 'Beauty',
+      route: AppRoutes.beauty,
     ),
     _NavigationItem(
       icon: Icons.shopping_bag_outlined,
       activeIcon: Icons.shopping_bag,
       label: 'Shop',
+      route: AppRoutes.shop,
+    ),
+    _NavigationItem(
+      icon: Icons.content_cut_outlined,
+      activeIcon: Icons.content_cut,
+      label: 'Barbers',
+      route: AppRoutes.barbers,
     ),
     _NavigationItem(
       icon: Icons.person_outline,
       activeIcon: Icons.person,
       label: 'Profile',
+      route: AppRoutes.profile,
     ),
   ];
 
+  int _getSelectedIndex(BuildContext context) {
+    final uri = GoRouterState.of(context).uri;
+    final path = uri.path;
+
+    // Helper to match root or subroute
+    bool matchesTab(String tab) => path == '/$tab' || path.startsWith('/$tab/');
+
+    // Check which tab route the current location belongs to
+    if (matchesTab('videos') || matchesTab('video')) {
+      return 0;
+    } else if (matchesTab('beauty') || matchesTab('beauty-service')) {
+      return 1;
+    } else if (matchesTab('shop') ||
+        matchesTab('product') ||
+        matchesTab('cart') ||
+        matchesTab('checkout')) {
+      return 2;
+    } else if (matchesTab('barbers') || matchesTab('barber')) {
+      return 3;
+    } else if (matchesTab('profile') || matchesTab('settings')) {
+      return 4;
+    }
+
+    // Default to Shop (center)
+    return 2;
+  }
+
   void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    final route = _navigationItems[index].route;
+    context.go(route);
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = _getSelectedIndex(context);
+
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: widget.child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
@@ -81,15 +101,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ],
         ),
         child: SafeArea(
+          top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(
                 _navigationItems.length,
                 (index) => _NavigationButton(
                   item: _navigationItems[index],
-                  isActive: _currentIndex == index,
+                  isActive: currentIndex == index,
                   onTap: () => _onTabTapped(index),
                 ),
               ),
@@ -106,11 +127,13 @@ class _NavigationItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
+  final String route;
 
   const _NavigationItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
+    required this.route,
   });
 }
 
@@ -140,13 +163,13 @@ class _NavigationButton extends StatelessWidget {
               Icon(
                 isActive ? item.activeIcon : item.icon,
                 color: isActive ? AppColors.primary : AppColors.textSecondary,
-                size: 26,
+                size: 24,
               ),
               const SizedBox(height: 4),
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   color: isActive ? AppColors.primary : AppColors.textSecondary,
                 ),

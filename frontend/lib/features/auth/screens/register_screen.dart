@@ -17,18 +17,20 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-  String _selectedUserType = 'user'; // 'user' or 'business'
+  String _selectedUserType = 'normal'; // 'normal' or 'business'
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
@@ -42,7 +44,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = true);
 
     final result = await ref.read(authProvider.notifier).register(
-          name: _nameController.text.trim(),
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
           passwordConfirmation: _confirmPasswordController.text,
@@ -57,8 +60,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result is Success) {
-      // Navigate to main screen
-      context.go(AppRoutes.main);
+      // Navigate to shop (main app)
+      context.go(AppRoutes.shop);
     } else if (result is Failure) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -124,11 +127,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Expanded(
                       child: _AccountTypeCard(
                         icon: Icons.person_outline,
-                        title: 'User',
+                        title: 'Customer',
                         description: 'Book services & shop',
-                        isSelected: _selectedUserType == 'user',
+                        isSelected: _selectedUserType == 'normal',
                         onTap: () {
-                          setState(() => _selectedUserType = 'user');
+                          setState(() => _selectedUserType = 'normal');
                         },
                       ),
                     ),
@@ -148,19 +151,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Name Input
+                // First Name Input
                 TextInput(
-                  controller: _nameController,
-                  label: 'Full Name',
-                  hint: 'Enter your full name',
+                  controller: _firstNameController,
+                  label: 'First Name',
+                  hint: 'Enter your first name',
                   prefixIcon: Icons.person_outline,
                   textInputAction: TextInputAction.next,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
+                      return 'Please enter your first name';
                     }
-                    if (value.length < 3) {
-                      return 'Name must be at least 3 characters';
+                    if (value.length < 2) {
+                      return 'First name must be at least 2 characters';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Last Name Input
+                TextInput(
+                  controller: _lastNameController,
+                  label: 'Last Name',
+                  hint: 'Enter your last name',
+                  prefixIcon: Icons.person_outline,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your last name';
+                    }
+                    if (value.length < 2) {
+                      return 'Last name must be at least 2 characters';
                     }
                     return null;
                   },
