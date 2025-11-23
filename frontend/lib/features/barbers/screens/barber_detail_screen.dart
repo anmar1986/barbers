@@ -299,8 +299,13 @@ class BarberDetailScreen extends ConsumerWidget {
                   _ContactItem(
                     icon: Icons.location_on,
                     label: 'Address',
-                    value:
-                        '${barber.address ?? ''}, ${barber.city ?? ''}, ${barber.state ?? ''}',
+                    value: [
+                      barber.address,
+                      barber.city,
+                      barber.state,
+                    ]
+                        .where((part) => part != null && part.trim().isNotEmpty)
+                        .join(', '),
                   ),
                   if (barber.phone != null)
                     _ContactItem(

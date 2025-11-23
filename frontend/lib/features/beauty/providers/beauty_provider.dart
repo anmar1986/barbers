@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/api_result.dart';
+import '../../../core/providers/dio_provider.dart';
 import '../../../shared/models/business_model.dart';
 import '../repositories/beauty_repository.dart';
 
@@ -53,7 +54,7 @@ class BeautyListState {
 
 /// Dio Client Provider for Beauty
 final beautyDioClientProvider = Provider<DioClient>((ref) {
-  return DioClient();
+  return ref.watch(dioClientProvider);
 });
 
 /// Beauty Repository Provider
@@ -129,6 +130,7 @@ class BeautyListNotifier extends StateNotifier<BeautyListState> {
       state = state.copyWith(
         isLoadingMore: false,
         error: error,
+        businesses: state.businesses, // Preserve existing list
       );
     });
   }

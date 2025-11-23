@@ -320,8 +320,13 @@ class BeautyDetailScreen extends ConsumerWidget {
                   _ContactItem(
                     icon: Icons.location_on,
                     label: 'Address',
-                    value:
-                        '${business.address ?? ''}, ${business.city ?? ''}, ${business.state ?? ''}',
+                    value: [
+                      business.address,
+                      business.city,
+                      business.state,
+                    ]
+                        .where((part) => part != null && part.trim().isNotEmpty)
+                        .join(', '),
                   ),
                   if (business.phone != null)
                     _ContactItem(

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/api_result.dart';
+import '../../../core/providers/dio_provider.dart';
 import '../../../shared/models/business_model.dart';
 import '../repositories/barber_repository.dart';
 
@@ -51,7 +52,7 @@ class BarberListState {
 
 /// Dio Client Provider for Barbers
 final barberDioClientProvider = Provider<DioClient>((ref) {
-  return DioClient();
+  return ref.watch(dioClientProvider);
 });
 
 /// Barber Repository Provider
@@ -125,6 +126,7 @@ class BarberListNotifier extends StateNotifier<BarberListState> {
       state = state.copyWith(
         isLoadingMore: false,
         error: error,
+        barbers: state.barbers, // Preserve existing list
       );
     });
   }

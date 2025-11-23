@@ -78,7 +78,7 @@ class ProfileTabScreen extends ConsumerWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => context.push(AppRoutes.login),
+                          onPressed: () => context.go(AppRoutes.login),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -102,7 +102,7 @@ class ProfileTabScreen extends ConsumerWidget {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: () => context.push(AppRoutes.register),
+                          onPressed: () => context.go(AppRoutes.register),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             side: const BorderSide(color: AppColors.primary),

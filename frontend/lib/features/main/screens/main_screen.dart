@@ -52,24 +52,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   ];
 
   int _getSelectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
+    final uri = GoRouterState.of(context).uri;
+    final path = uri.path;
+
+    // Helper to match root or subroute
+    bool matchesTab(String tab) => path == '/$tab' || path.startsWith('/$tab/');
 
     // Check which tab route the current location belongs to
-    if (location.startsWith('/videos') || location.startsWith('/video')) {
+    if (matchesTab('videos') || matchesTab('video')) {
       return 0;
-    } else if (location.startsWith('/beauty') ||
-        location.startsWith('/beauty-service')) {
+    } else if (matchesTab('beauty') || matchesTab('beauty-service')) {
       return 1;
-    } else if (location.startsWith('/shop') ||
-        location.startsWith('/product') ||
-        location.startsWith('/cart') ||
-        location.startsWith('/checkout')) {
+    } else if (matchesTab('shop') ||
+        matchesTab('product') ||
+        matchesTab('cart') ||
+        matchesTab('checkout')) {
       return 2;
-    } else if (location.startsWith('/barbers') ||
-        location.startsWith('/barber')) {
+    } else if (matchesTab('barbers') || matchesTab('barber')) {
       return 3;
-    } else if (location.startsWith('/profile') ||
-        location.startsWith('/settings')) {
+    } else if (matchesTab('profile') || matchesTab('settings')) {
       return 4;
     }
 
