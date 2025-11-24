@@ -14,6 +14,11 @@ import '../../features/beauty/screens/beauty_detail_screen.dart';
 import '../../features/videos/screens/videos_tab_screen.dart';
 import '../../features/shop/screens/shop_tab_screen.dart';
 import '../../features/profile/screens/profile_tab_screen.dart';
+import '../../features/profile/screens/edit_business_screen.dart';
+import '../../features/profile/screens/manage_services_screen.dart';
+import '../../features/profile/screens/manage_hours_screen.dart';
+import '../../features/profile/screens/manage_videos_screen.dart';
+import '../../features/profile/screens/create_business_screen.dart';
 
 /// App Router Configuration
 /// Uses ShellRoute to keep navbar visible on all main pages
@@ -173,6 +178,33 @@ class AppRouter {
             },
           ),
 
+          // ---------- BUSINESS MANAGEMENT ----------
+          GoRoute(
+            path: AppRoutes.createBusiness,
+            name: 'createBusiness',
+            builder: (context, state) => const CreateBusinessScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.editBusiness,
+            name: 'editBusiness',
+            builder: (context, state) => const EditBusinessScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.manageServices,
+            name: 'manageServices',
+            builder: (context, state) => const ManageServicesScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.manageHours,
+            name: 'manageHours',
+            builder: (context, state) => const ManageHoursScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.manageVideos,
+            name: 'manageVideos',
+            builder: (context, state) => const ManageVideosScreen(),
+          ),
+
           // ---------- BUSINESS COMMON ----------
           GoRoute(
             path: '${AppRoutes.businessDetail}/:businessId',
@@ -271,6 +303,13 @@ class AppRoutes {
   static const String editProfile = '/profile/edit';
   static const String settings = '/settings';
   static const String userProfile = '/user';
+
+  // Business Management
+  static const String createBusiness = '/business/create';
+  static const String editBusiness = '/business/edit';
+  static const String manageServices = '/business/services';
+  static const String manageHours = '/business/hours';
+  static const String manageVideos = '/business/videos';
 
   // Business
   static const String businessDetail = '/business';

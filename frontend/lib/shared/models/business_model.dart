@@ -236,6 +236,7 @@ class Business {
 /// Business Service Model
 class BusinessService {
   final int id;
+  final String? uuid;
   final int businessId;
   final String name;
   final String? description;
@@ -245,6 +246,7 @@ class BusinessService {
 
   const BusinessService({
     required this.id,
+    this.uuid,
     required this.businessId,
     required this.name,
     this.description,
@@ -256,6 +258,7 @@ class BusinessService {
   factory BusinessService.fromJson(Map<String, dynamic> json) {
     return BusinessService(
       id: json['id'] ?? 0,
+      uuid: json['uuid'],
       businessId: json['business_id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'],
@@ -269,14 +272,50 @@ class BusinessService {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'business_id': businessId,
       'name': name,
       'description': description,
       'price': price,
       'duration': duration,
       'is_active': isActive,
     };
+  }
+
+  BusinessService copyWith({
+    int? id,
+    String? uuid,
+    int? businessId,
+    String? name,
+    String? description,
+    double? price,
+    int? duration,
+    bool? isActive,
+  }) {
+    return BusinessService(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      businessId: businessId ?? this.businessId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      duration: duration ?? this.duration,
+      isActive: isActive ?? this.isActive,
+    );
+  }
+
+  String get formattedPrice {
+    if (price == null) return 'Price on request';
+    return '\$${price!.toStringAsFixed(2)}';
+  }
+
+  String get formattedDuration {
+    if (duration == null) return '';
+    if (duration! >= 60) {
+      final hours = duration! ~/ 60;
+      final mins = duration! % 60;
+      if (mins == 0) return '${hours}h';
+      return '${hours}h ${mins}min';
+    }
+    return '${duration}min';
   }
 }
 
@@ -303,9 +342,39 @@ class BusinessHours {
       id: json['id'] ?? 0,
       businessId: json['business_id'] ?? 0,
       dayOfWeek: json['day_of_week'] ?? 0,
-      openTime: json['open_time'],
-      closeTime: json['close_time'],
+      openTime:
+          json['open_time'] != null ? _normalizeTime(json['open_time']) : null,
+      closeTime: json['close_time'] != null
+          ? _normalizeTime(json['close_time'])
+          : null,
       isClosed: json['is_closed'] == true || json['is_closed'] == 1,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'day_of_week': dayOfWeek,
+      'open_time': openTime,
+      'close_time': closeTime,
+      'is_closed': isClosed,
+    };
+  }
+
+  BusinessHours copyWith({
+    int? id,
+    int? businessId,
+    int? dayOfWeek,
+    String? openTime,
+    String? closeTime,
+    bool? isClosed,
+  }) {
+    return BusinessHours(
+      id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
+      dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      openTime: openTime ?? this.openTime,
+      closeTime: closeTime ?? this.closeTime,
+      isClosed: isClosed ?? this.isClosed,
     );
   }
 
@@ -320,6 +389,46 @@ class BusinessHours {
       'Saturday'
     ];
     return days[dayOfWeek % 7];
+  }
+
+  String get dayNameShort {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[dayOfWeek % 7];
+  }
+
+  String get formattedHours {
+    if (isClosed) return 'Closed';
+    if (openTime == null || closeTime == null) return 'Not set';
+
+    // Format times, stripping seconds if present
+    final open = _normalizeTime(openTime);
+    final close = _normalizeTime(closeTime);
+    return '$open - $close';
+  }
+
+  /// Strip seconds from time string (HH:MM:SS -> HH:MM)
+  static String _normalizeTime(String? time) {
+    if (time == null) return '';
+    final parts = time.split(':');
+    if (parts.length >= 2) {
+      return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+    }
+    return time;
+  }
+
+  /// Create default hours for all days of the week
+  static List<BusinessHours> createDefaultHours() {
+    return List.generate(7, (index) {
+      final isClosed = index == 0; // Closed on Sunday by default
+      return BusinessHours(
+        id: 0,
+        businessId: 0,
+        dayOfWeek: index,
+        openTime: isClosed ? null : '09:00',
+        closeTime: isClosed ? null : '18:00',
+        isClosed: isClosed,
+      );
+    });
   }
 }
 

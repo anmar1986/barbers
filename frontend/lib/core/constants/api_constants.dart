@@ -52,6 +52,28 @@ class ApiConstants {
   static const String featuredBusinesses = '/businesses/featured';
   static const String searchBusinesses = '/businesses/search';
 
+  // ==================== MY BUSINESS (OWNER) ENDPOINTS ====================
+
+  static const String myBusiness = '/my-business';
+  static const String myBusinessStatistics = '/my-business/statistics';
+  static const String myBusinessServices = '/my-business/services';
+  static const String myBusinessHours = '/my-business/hours';
+  static const String myBusinessVideos = '/my-business/videos';
+
+  // ==================== UPLOAD ENDPOINTS ====================
+
+  static const String uploadImage = '/upload/image';
+  static const String uploadImages = '/upload/images';
+  static const String uploadVideoFile = '/upload/video';
+  static const String deleteFile = '/upload/file';
+  static const String chunkedUploadInit = '/upload/chunked/init';
+  static const String chunkedUploadChunk = '/upload/chunked/chunk';
+  static const String chunkedUploadComplete = '/upload/chunked/complete';
+  static const String chunkedUploadStatus =
+      '/upload/chunked/status'; // + /{uploadId}
+  static const String chunkedUploadCancel =
+      '/upload/chunked/cancel'; // + /{uploadId}
+
   // ==================== VIDEO ENDPOINTS ====================
 
   static const String videos = '/videos';

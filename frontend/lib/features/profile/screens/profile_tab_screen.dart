@@ -3,17 +3,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
+import '../../../shared/models/business_model.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../providers/business_provider.dart';
 
 /// Profile Tab Screen
 /// Main home/profile feed screen
-class ProfileTabScreen extends ConsumerWidget {
+class ProfileTabScreen extends ConsumerStatefulWidget {
   const ProfileTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileTabScreen> createState() => _ProfileTabScreenState();
+}
+
+class _ProfileTabScreenState extends ConsumerState<ProfileTabScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load business data if user is a business owner
+    Future.microtask(() {
+      final user = ref.read(currentUserProvider);
+      if (user != null && user.isBusiness) {
+        ref.read(businessProfileProvider.notifier).loadBusiness();
+        ref.read(businessProfileProvider.notifier).loadStatistics();
+        ref.read(businessProfileProvider.notifier).loadBusinessHours();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    final businessState = ref.watch(businessProfileProvider);
 
     // Guest user view - show login/register options
     if (user == null) {
@@ -257,6 +279,258 @@ class ProfileTabScreen extends ConsumerWidget {
 
                 const SizedBox(height: 8),
 
+                // Business Management Section (for business owners)
+                if (user.isBusiness) ...[
+                  // Show "Create Business" card if no business exists
+                  if (businessState.business == null &&
+                      !businessState.isLoading) ...[
+                    CustomCard(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.business, color: AppColors.primary),
+                              SizedBox(width: 8),
+                              Text(
+                                'Create Your Business',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Set up your business profile to start accepting bookings and showcasing your services.',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () =>
+                                  context.push(AppRoutes.createBusiness),
+                              icon: const Icon(Icons.add_business),
+                              label: const Text('Create Business Profile'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else if (businessState.business != null) ...[
+                    CustomCard(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.business,
+                                  color: AppColors.primary),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'Business Management',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              if (businessState.business?.isVerified == true)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.verified,
+                                        size: 14,
+                                        color: AppColors.success,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Verified',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.success,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Business Stats
+                          if (businessState.statistics != null) ...[
+                            Row(
+                              children: [
+                                _StatItem(
+                                  icon: Icons.visibility,
+                                  label: 'Views',
+                                  value: businessState.statistics!.totalViews
+                                      .toString(),
+                                ),
+                                _StatItem(
+                                  icon: Icons.people,
+                                  label: 'Followers',
+                                  value: businessState
+                                      .statistics!.totalFollowers
+                                      .toString(),
+                                ),
+                                _StatItem(
+                                  icon: Icons.star,
+                                  label: 'Rating',
+                                  value: businessState.statistics!.averageRating
+                                      .toStringAsFixed(1),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            const Divider(),
+                          ],
+
+                          _QuickActionButton(
+                            icon: Icons.edit_square,
+                            label: 'Edit Business Profile',
+                            onTap: () => context.push(AppRoutes.editBusiness),
+                          ),
+                          const Divider(),
+                          _QuickActionButton(
+                            icon: Icons.design_services,
+                            label: 'Manage Services',
+                            subtitle:
+                                '${businessState.services.length} services',
+                            onTap: () => context.push(AppRoutes.manageServices),
+                          ),
+                          const Divider(),
+                          _QuickActionButton(
+                            icon: Icons.access_time,
+                            label: 'Business Hours',
+                            subtitle: _getHoursSubtitle(businessState.hours),
+                            onTap: () async {
+                              await context.push(AppRoutes.manageHours);
+                              // Reload hours after returning from manage hours screen
+                              if (context.mounted) {
+                                ref
+                                    .read(businessProfileProvider.notifier)
+                                    .loadBusinessHours();
+                              }
+                            },
+                          ),
+                          const Divider(),
+                          _QuickActionButton(
+                            icon: Icons.video_library,
+                            label: 'My Videos',
+                            subtitle: '${businessState.videos.length} videos',
+                            onTap: () => context.push(AppRoutes.manageVideos),
+                          ),
+                          const Divider(),
+                          _QuickActionButton(
+                            icon: Icons.analytics_outlined,
+                            label: 'Analytics',
+                            onTap: () => context.push(AppRoutes.analytics),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+
+                  // Working Hours Preview (for business owners with configured hours)
+                  if (user.isBusiness && businessState.hours.isNotEmpty)
+                    CustomCard(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Working Hours',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  await context.push(AppRoutes.manageHours);
+                                  if (context.mounted) {
+                                    ref
+                                        .read(businessProfileProvider.notifier)
+                                        .loadBusinessHours();
+                                  }
+                                },
+                                child: const Text('Edit'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ...businessState.hours.map((hour) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      hour.dayName,
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: hour.dayOfWeek ==
+                                                DateTime.now().weekday % 7
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    Text(
+                                      hour.formattedHours,
+                                      style: TextStyle(
+                                        color: hour.isClosed
+                                            ? AppColors.error
+                                            : AppColors.textSecondary,
+                                        fontWeight: hour.dayOfWeek ==
+                                                DateTime.now().weekday % 7
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                  if (user.isBusiness && businessState.hours.isNotEmpty)
+                    const SizedBox(height: 16),
+                ],
+
                 // Quick Actions
                 CustomCard(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -289,14 +563,6 @@ class ProfileTabScreen extends ConsumerWidget {
                         label: 'Messages',
                         onTap: () => context.push(AppRoutes.conversations),
                       ),
-                      if (user.isBusiness) ...[
-                        const Divider(),
-                        _QuickActionButton(
-                          icon: Icons.analytics_outlined,
-                          label: 'Analytics',
-                          onTap: () => context.push(AppRoutes.analytics),
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -329,17 +595,27 @@ class ProfileTabScreen extends ConsumerWidget {
       ),
     );
   }
+
+  /// Get hours subtitle showing configured open days
+  String _getHoursSubtitle(List<BusinessHours> hours) {
+    if (hours.isEmpty) return 'Not configured';
+    final openDays = hours.where((h) => !h.isClosed).length;
+    if (openDays == 0) return 'All days closed';
+    return '$openDays day${openDays == 1 ? '' : 's'} open';
+  }
 }
 
 /// Quick Action Button Widget
 class _QuickActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String? subtitle;
   final VoidCallback onTap;
 
   const _QuickActionButton({
     required this.icon,
     required this.label,
+    this.subtitle,
     required this.onTap,
   });
 
@@ -354,12 +630,25 @@ class _QuickActionButton extends StatelessWidget {
             Icon(icon, color: AppColors.primary),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textPrimary,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                ],
               ),
             ),
             const Icon(
@@ -368,6 +657,46 @@ class _QuickActionButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Stat Item Widget
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.primary, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

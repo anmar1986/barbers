@@ -18,7 +18,7 @@ class BeautyDetailScreen extends ConsumerWidget {
     if (beautyState.isLoading) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.secondary,
+          backgroundColor: AppColors.primary,
           title: const Text('Loading...'),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -28,7 +28,7 @@ class BeautyDetailScreen extends ConsumerWidget {
     if (beautyState.error != null || beautyState.business == null) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.secondary,
+          backgroundColor: AppColors.primary,
           title: const Text('Error'),
         ),
         body: Center(
@@ -63,7 +63,7 @@ class BeautyDetailScreen extends ConsumerWidget {
           SliverAppBar(
             expandedHeight: 250,
             pinned: true,
-            backgroundColor: AppColors.secondary,
+            backgroundColor: AppColors.primary,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 business.businessName,
@@ -88,7 +88,7 @@ class BeautyDetailScreen extends ConsumerWidget {
                       business.coverImage!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        color: AppColors.secondary.withValues(alpha: 0.3),
+                        color: AppColors.primary.withValues(alpha: 0.3),
                         child: Icon(
                           _getBusinessIcon(business.businessType),
                           size: 80,
@@ -98,7 +98,7 @@ class BeautyDetailScreen extends ConsumerWidget {
                     )
                   else
                     Container(
-                      color: AppColors.secondary.withValues(alpha: 0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       child: Icon(
                         _getBusinessIcon(business.businessType),
                         size: 80,
@@ -155,7 +155,7 @@ class BeautyDetailScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.secondary,
+                            color: AppColors.primary,
                             width: 2,
                           ),
                           color: AppColors.backgroundGrey,
@@ -170,13 +170,13 @@ class BeautyDetailScreen extends ConsumerWidget {
                                       Icon(
                                     _getBusinessIcon(business.businessType),
                                     size: 40,
-                                    color: AppColors.secondary,
+                                    color: AppColors.primary,
                                   ),
                                 )
                               : Icon(
                                   _getBusinessIcon(business.businessType),
                                   size: 40,
-                                  color: AppColors.secondary,
+                                  color: AppColors.primary,
                                 ),
                         ),
                       ),
@@ -193,14 +193,13 @@ class BeautyDetailScreen extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    AppColors.secondary.withValues(alpha: 0.1),
+                                color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 business.businessTypeDisplay,
                                 style: const TextStyle(
-                                  color: AppColors.secondary,
+                                  color: AppColors.primary,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -416,7 +415,7 @@ class BeautyDetailScreen extends ConsumerWidget {
               // TODO: Navigate to booking
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
+              backgroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -469,7 +468,7 @@ class _ContactItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.secondary),
+          Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -554,7 +553,7 @@ class _ServiceItem extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.secondary,
+                color: AppColors.primary,
               ),
             ),
         ],
@@ -583,7 +582,7 @@ class _WorkingHourItem extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              color: isToday ? AppColors.secondary : AppColors.textPrimary,
+              color: isToday ? AppColors.primary : AppColors.textPrimary,
             ),
           ),
           Text(
@@ -595,7 +594,7 @@ class _WorkingHourItem extends StatelessWidget {
               fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
               color: hour.isClosed
                   ? AppColors.error
-                  : (isToday ? AppColors.secondary : AppColors.textSecondary),
+                  : (isToday ? AppColors.primary : AppColors.textSecondary),
             ),
           ),
         ],
