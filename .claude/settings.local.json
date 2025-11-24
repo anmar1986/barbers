@@ -30,7 +30,11 @@
       "Bash(/c/xampp/mysql/bin/mysql:*)",
       "Bash(npm view:*)",
       "Bash(npm search:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(tree:*)",
+      "Bash(ipconfig:*)",
+      "Bash(Select-String \"IPv4\")",
+      "Bash(Select-Object -First 1)"
     ],
     "deny": [],
     "ask": []

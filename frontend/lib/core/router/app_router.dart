@@ -13,6 +13,11 @@ import '../../features/beauty/screens/beauty_tab_screen.dart';
 import '../../features/beauty/screens/beauty_detail_screen.dart';
 import '../../features/videos/screens/videos_tab_screen.dart';
 import '../../features/shop/screens/shop_tab_screen.dart';
+import '../../features/shop/screens/product_detail_screen.dart';
+import '../../features/shop/screens/cart_screen.dart';
+import '../../features/shop/screens/checkout_screen.dart';
+import '../../features/shop/screens/order_history_screen.dart';
+import '../../features/shop/screens/order_success_screen.dart';
 import '../../features/profile/screens/profile_tab_screen.dart';
 import '../../features/profile/screens/edit_business_screen.dart';
 import '../../features/profile/screens/manage_services_screen.dart';
@@ -111,7 +116,7 @@ class AppRouter {
             name: 'productDetail',
             builder: (context, state) {
               final productId = state.pathParameters['productId']!;
-              return ProductDetailScreen(productId: productId);
+              return ProductDetailScreen(productUuid: productId);
             },
           ),
           GoRoute(
@@ -125,16 +130,25 @@ class AppRouter {
             builder: (context, state) => const CheckoutScreen(),
           ),
           GoRoute(
+            path: AppRoutes.orderSuccess,
+            name: 'orderSuccess',
+            builder: (context, state) => const OrderSuccessScreen(),
+          ),
+          GoRoute(
             path: AppRoutes.orders,
             name: 'orders',
-            builder: (context, state) => const OrdersScreen(),
+            builder: (context, state) => const OrderHistoryScreen(),
           ),
           GoRoute(
             path: '${AppRoutes.orderDetail}/:orderId',
             name: 'orderDetail',
             builder: (context, state) {
-              final orderId = state.pathParameters['orderId']!;
-              return OrderDetailScreen(orderId: orderId);
+              final orderNumber = state.pathParameters['orderId']!;
+              // TODO: Create OrderDetailScreen
+              return Scaffold(
+                body: Center(
+                    child: Text('Order Detail: $orderNumber - Coming Soon')),
+              );
             },
           ),
 
@@ -334,6 +348,7 @@ class AppRoutes {
   static const String productDetail = '/product';
   static const String cart = '/cart';
   static const String checkout = '/checkout';
+  static const String orderSuccess = '/order-success';
   static const String orders = '/orders';
   static const String orderDetail = '/order';
 
@@ -544,67 +559,7 @@ class UploadVideoScreen extends StatelessWidget {
   }
 }
 
-class ProductDetailScreen extends StatelessWidget {
-  final String productId;
-  const ProductDetailScreen({super.key, required this.productId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Product Detail')),
-      body: Center(child: Text('Product: $productId')),
-    );
-  }
-}
-
-class CartScreen extends StatelessWidget {
-  const CartScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cart')),
-      body: const Center(child: Text('Shopping Cart')),
-    );
-  }
-}
-
-class CheckoutScreen extends StatelessWidget {
-  const CheckoutScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
-      body: const Center(child: Text('Checkout')),
-    );
-  }
-}
-
-class OrdersScreen extends StatelessWidget {
-  const OrdersScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Orders')),
-      body: const Center(child: Text('Order History')),
-    );
-  }
-}
-
-class OrderDetailScreen extends StatelessWidget {
-  final String orderId;
-  const OrderDetailScreen({super.key, required this.orderId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Order Detail')),
-      body: Center(child: Text('Order: $orderId')),
-    );
-  }
-}
+// Shop screens are now imported from features/shop/screens/
 
 class ConversationsScreen extends StatelessWidget {
   const ConversationsScreen({super.key});

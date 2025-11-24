@@ -66,4 +66,16 @@ extension ApiResultExtension<T> on ApiResult<T> {
       error: (this as Failure<T>).error,
     );
   }
+
+  /// Fold pattern - handle both success and failure cases
+  R fold<R>({
+    required R Function(T data) onSuccess,
+    required R Function(String message) onFailure,
+  }) {
+    if (this is Success<T>) {
+      return onSuccess((this as Success<T>).data);
+    } else {
+      return onFailure((this as Failure<T>).message);
+    }
+  }
 }
