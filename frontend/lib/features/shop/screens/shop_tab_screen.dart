@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/widgets.dart';
+import '../providers/shop_provider.dart';
+import '../widgets/product_card.dart';
 
 /// Shop Tab Screen
 /// Browse and purchase products
@@ -16,18 +18,41 @@ class ShopTabScreen extends ConsumerStatefulWidget {
 
 class _ShopTabScreenState extends ConsumerState<ShopTabScreen> {
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
+      ref.read(productListProvider.notifier).loadMoreProducts();
+    }
+  }
+
+  void _onSearch(String query) {
+    ref.read(productListProvider.notifier).searchProducts(query);
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(productListProvider);
+    final cartState = ref.watch(cartProvider);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           // App Bar
           SliverAppBar(
@@ -36,9 +61,38 @@ class _ShopTabScreenState extends ConsumerState<ShopTabScreen> {
             backgroundColor: AppColors.primary,
             title: const Text('Shop'),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined),
-                onPressed: () => context.push(AppRoutes.cart),
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined),
+                    onPressed: () => context.push(AppRoutes.cart),
+                  ),
+                  if (cartState.cart.itemCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${cartState.cart.itemCount}',
+                          style: const TextStyle(
+                            color: AppColors.textWhite,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
@@ -51,35 +105,22 @@ class _ShopTabScreenState extends ConsumerState<ShopTabScreen> {
               child: SearchInput(
                 controller: _searchController,
                 hint: 'Search products...',
+                onChanged: _onSearch,
               ),
             ),
           ),
 
-          // Categories
-          SliverToBoxAdapter(
-            child: Container(
-              color: AppColors.surfaceWhite,
-              padding: const EdgeInsets.only(bottom: 16),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    _CategoryChip(label: 'All', isSelected: true, onTap: () {}),
-                    _CategoryChip(label: 'Hair Care', onTap: () {}),
-                    _CategoryChip(label: 'Styling', onTap: () {}),
-                    _CategoryChip(label: 'Grooming', onTap: () {}),
-                    _CategoryChip(label: 'Skin Care', onTap: () {}),
-                    _CategoryChip(label: 'Tools', onTap: () {}),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Categories - Hidden until backend endpoint is ready
+          // if (state.categories.isNotEmpty)
+          //   SliverToBoxAdapter(...),
 
           const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
-          // Featured Products
+          // Featured Products - Hidden until backend endpoint is ready
+          // if (state.featuredProducts.isNotEmpty)
+          //   SliverToBoxAdapter(...),
+
+          // All Products Header
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -87,45 +128,78 @@ class _ShopTabScreenState extends ConsumerState<ShopTabScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Featured Products',
+                    'All Products',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('See All'),
+                  IconButton(
+                    icon: const Icon(Icons.filter_list),
+                    onPressed: () {
+                      // TODO: Show sort/filter options
+                    },
                   ),
                 ],
               ),
             ),
           ),
 
-          // Products Grid
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.7,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _ProductCard(
-                  name: 'Product ${index + 1}',
-                  price: 29.99 + (index * 5),
-                  rating: 4.0 + (index % 5) * 0.2,
-                  onTap: () {
-                    // TODO: Navigate to product detail
-                  },
+          // Loading or Products Grid
+          if (state.isLoading && state.products.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: LoadingSpinner()),
+            )
+          else if (state.error != null && state.products.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  state.error!,
+                  style: const TextStyle(color: AppColors.error),
                 ),
-                childCount: 10,
+              ),
+            )
+          else if (state.products.isEmpty)
+            const SliverFillRemaining(
+              child: EmptyState(
+                title: 'No Products',
+                message: 'No products found',
+                icon: Icons.inventory_2_outlined,
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.7,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final product = state.products[index];
+                    return ProductCard(
+                      product: product,
+                      onTap: () => context
+                          .push('${AppRoutes.productDetail}/${product.uuid}'),
+                    );
+                  },
+                  childCount: state.products.length,
+                ),
               ),
             ),
-          ),
+
+          // Loading more indicator
+          if (state.isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: LoadingSpinner()),
+              ),
+            ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
         ],
@@ -134,125 +208,5 @@ class _ShopTabScreenState extends ConsumerState<ShopTabScreen> {
   }
 }
 
-/// Category Chip Widget
-class _CategoryChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _CategoryChip({
-    required this.label,
-    this.isSelected = false,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        backgroundColor: AppColors.backgroundGrey,
-        selectedColor: AppColors.primary,
-        labelStyle: TextStyle(
-          color: isSelected ? AppColors.textWhite : AppColors.textPrimary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-}
-
-/// Product Card Widget
-class _ProductCard extends StatelessWidget {
-  final String name;
-  final double price;
-  final double rating;
-  final VoidCallback onTap;
-
-  const _ProductCard({
-    required this.name,
-    required this.price,
-    required this.rating,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: CustomCard(
-        padding: EdgeInsets.zero,
-        margin: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image
-            Container(
-              height: 140,
-              decoration: BoxDecoration(
-                color: AppColors.backgroundGrey,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.inventory_2_outlined,
-                  size: 48,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-
-            // Info
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        size: 14,
-                        color: AppColors.star,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '\$${price.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// Category Chip Widget - Commented out until backend endpoint is ready
+// class _CategoryChip extends StatelessWidget { ... }

@@ -100,35 +100,35 @@ class ApiConstants {
 
   // ==================== PRODUCT/SHOP ENDPOINTS ====================
 
-  static const String products = '/products';
-  static const String productDetail = '/products'; // + /{uuid}
-  static const String productCategories = '/products/categories';
-  static const String featuredProducts = '/products/featured';
-  static const String searchProducts = '/products/search';
+  static const String products = '/v1/products';
+  static const String productDetail = '/v1/products'; // + /{uuid}
+  static const String productCategories = '/v1/products/categories';
+  static const String featuredProducts = '/v1/products/featured';
+  static const String searchProducts = '/v1/products/search';
 
   // ==================== CART ENDPOINTS ====================
 
-  static const String cart = '/cart';
-  static const String addToCart = '/cart/add';
-  static const String updateCartItem = '/cart/update'; // + /{id}
-  static const String removeFromCart = '/cart/remove'; // + /{id}
-  static const String clearCart = '/cart/clear';
+  static const String cart = '/v1/cart';
+  static const String addToCart = '/v1/cart/items';
+  static const String updateCartItem = '/v1/cart/items'; // + /{id}
+  static const String removeFromCart = '/v1/cart/items'; // + /{id}
+  static const String clearCart = '/v1/cart/clear';
 
   // ==================== ORDER ENDPOINTS ====================
 
-  static const String orders = '/orders';
-  static const String orderDetail = '/orders'; // + /{uuid}
-  static const String createOrder = '/orders';
-  static const String cancelOrder = '/orders'; // + /{uuid}/cancel
-  static const String orderHistory = '/orders/history';
+  static const String orders = '/v1/orders';
+  static const String orderDetail = '/v1/orders'; // + /{uuid}
+  static const String createOrder = '/v1/checkout';
+  static const String cancelOrder = '/v1/orders'; // + /{uuid}/cancel
+  static const String orderHistory = '/v1/orders/history';
 
   // ==================== PAYMENT ENDPOINTS ====================
 
-  static const String createPaymentIntent = '/payments/intent';
-  static const String confirmPayment = '/payments/confirm';
-  static const String paymentMethods = '/payments/methods';
-  static const String addPaymentMethod = '/payments/methods/add';
-  static const String deletePaymentMethod = '/payments/methods'; // + /{id}
+  static const String createPaymentIntent = '/v1/payments/intent';
+  static const String confirmPayment = '/v1/payments/confirm';
+  static const String paymentMethods = '/v1/payments/methods';
+  static const String addPaymentMethod = '/v1/payments/methods/add';
+  static const String deletePaymentMethod = '/v1/payments/methods'; // + /{id}
 
   // ==================== REVIEW ENDPOINTS ====================
 
