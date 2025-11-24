@@ -77,7 +77,7 @@ class _BeautyTabScreenState extends ConsumerState<BeautyTabScreen>
           SliverAppBar(
             floating: true,
             pinned: true,
-            backgroundColor: AppColors.secondary,
+            backgroundColor: AppColors.primary,
             title: const Text('Beauty'),
             actions: [
               IconButton(
@@ -122,9 +122,9 @@ class _BeautyTabScreenState extends ConsumerState<BeautyTabScreen>
                 tabAlignment: TabAlignment.start,
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                labelColor: AppColors.secondary,
+                labelColor: AppColors.primary,
                 unselectedLabelColor: AppColors.textSecondary,
-                indicatorColor: AppColors.secondary,
+                indicatorColor: AppColors.primary,
                 tabs: _categories
                     .map((cat) => Tab(
                           icon: Icon(cat.icon),
@@ -172,7 +172,7 @@ class _BeautyTabScreenState extends ConsumerState<BeautyTabScreen>
               max: 50,
               divisions: 49,
               label: '10 km',
-              activeColor: AppColors.secondary,
+              activeColor: AppColors.primary,
               onChanged: (value) {},
             ),
             const SizedBox(height: 16),
@@ -204,10 +204,10 @@ class _BeautyTabScreenState extends ConsumerState<BeautyTabScreen>
             SwitchListTile(
               title: const Text('Open Now'),
               value: true,
-              activeTrackColor: AppColors.secondary.withValues(alpha: 0.5),
+              activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return AppColors.secondary;
+                  return AppColors.primary;
                 }
                 return null;
               }),
@@ -226,7 +226,7 @@ class _BeautyTabScreenState extends ConsumerState<BeautyTabScreen>
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
+                      backgroundColor: AppColors.primary,
                     ),
                     onPressed: () => Navigator.pop(context),
                     child: const Text('Apply'),
@@ -293,7 +293,7 @@ class _BeautyListViewState extends ConsumerState<_BeautyListView> {
     // Loading state
     if (beautyState.isLoading && beautyState.businesses.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(color: AppColors.secondary),
+        child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
 
@@ -407,8 +407,7 @@ class _BeautyListViewState extends ConsumerState<_BeautyListView> {
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(
-                    child:
-                        CircularProgressIndicator(color: AppColors.secondary)),
+                    child: CircularProgressIndicator(color: AppColors.primary)),
               ),
             ),
 
@@ -438,7 +437,7 @@ class _PriceChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.secondary : AppColors.backgroundGrey,
+          color: isSelected ? AppColors.primary : AppColors.backgroundGrey,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -479,7 +478,7 @@ class _BeautyCard extends StatelessWidget {
                 Container(
                   height: 110,
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
@@ -521,7 +520,7 @@ class _BeautyCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: AppColors.secondary,
+                        color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -633,7 +632,7 @@ class _BeautyCard extends StatelessWidget {
             child: Icon(
               _getCategoryIcon(),
               size: 48,
-              color: AppColors.secondary.withValues(alpha: 0.5),
+              color: AppColors.primary.withValues(alpha: 0.5),
             ),
           );
         },
@@ -646,7 +645,7 @@ class _BeautyCard extends StatelessWidget {
                       loadingProgress.expectedTotalBytes!
                   : null,
               strokeWidth: 2,
-              color: AppColors.secondary,
+              color: AppColors.primary,
             ),
           );
         },
@@ -657,7 +656,7 @@ class _BeautyCard extends StatelessWidget {
       child: Icon(
         _getCategoryIcon(),
         size: 48,
-        color: AppColors.secondary.withValues(alpha: 0.5),
+        color: AppColors.primary.withValues(alpha: 0.5),
       ),
     );
   }
